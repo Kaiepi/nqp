@@ -3130,6 +3130,10 @@ QAST::MASTOperations.add_core_moarop_mapping('queuepoll', 'queuepoll');
 QAST::MASTOperations.add_core_moarop_mapping('cpucores', 'cpucores');
 QAST::MASTOperations.add_core_moarop_mapping('threadlockcount', 'threadlockcount');
 
+# memory related opcodes
+QAST::MASTOperations.add_core_moarop_mapping('freemem', 'freemem');
+QAST::MASTOperations.add_core_moarop_mapping('totalmem', 'totalmem');
+
 # asynchrony related ops
 QAST::MASTOperations.add_core_moarop_mapping('timer', 'timer');
 QAST::MASTOperations.add_core_moarop_mapping('permit', 'permit', 0);

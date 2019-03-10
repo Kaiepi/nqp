@@ -300,6 +300,8 @@
   * [locallifetime](#locallifetime)
   * [const](#const)
   * [cpucores](#cpucores)
+  * [freemem](#freemem)
+  * [totalmem](#totalmem)
   * [getrusage](#getrusage)
   * [debugnoop `jvm`](#debugnoop-jvm)
   * [exit](#exit)
@@ -2562,6 +2564,17 @@ constants below can be used in nqp as (e.g.) `nqp::const::CCLASS_ANY`.
 
 Returns a native integer for the number of CPU cores that are reported to be
 available.
+
+## freemem
+* `freemem()`
+
+Returns a native integer for the amount of memory available on the system in
+bytes.
+
+## totalmem
+* `totalmem()`
+
+Returns a native integer for the total amount of memory on the system in bytes.
 
 ## getrusage
 * `getrusage(int @rusage)`

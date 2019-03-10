@@ -5770,6 +5770,16 @@ public final class Ops {
         return Runtime.getRuntime().availableProcessors();
     }
 
+	public static long freemem(ThreadContext tc) {
+		return ((OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean())
+			.getFreePhysicalMemorySize();
+	}
+
+	public static long totalmem(ThreadContext tc) {
+		return ((OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean())
+			.getTotalPhysicalMemorySize();
+	}
+
     public static SixModelObject lock(SixModelObject lock, ThreadContext tc) {
         if (lock instanceof ReentrantMutexInstance) {
             ((ReentrantMutexInstance)lock).lock.lock();
