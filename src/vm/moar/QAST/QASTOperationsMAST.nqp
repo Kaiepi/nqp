@@ -2303,6 +2303,11 @@ QAST::MASTOperations.add_core_moarop_mapping('accept', 'accept_sk');
 QAST::MASTOperations.add_core_moarop_mapping('getport', 'getport_sk');
 QAST::MASTOperations.add_core_moarop_mapping('setbuffersizefh', 'setbuffersize_fh', 0);
 
+QAST::MASTOperations.add_core_moarop_mapping('getaddrinfo', 'getaddrinfo');
+QAST::MASTOperations.add_core_moarop_mapping('addrfamily', 'addrfamily');
+QAST::MASTOperations.add_core_moarop_mapping('addrtype', 'addrtype');
+QAST::MASTOperations.add_core_moarop_mapping('addrprotocol', 'addrprotocol');
+
 QAST::MASTOperations.add_core_moarop_mapping('chmod', 'chmod_f', 0);
 QAST::MASTOperations.add_core_moarop_mapping('unlink', 'delete_f', 0);
 QAST::MASTOperations.add_core_moarop_mapping('rmdir', 'rmdir', 0);
