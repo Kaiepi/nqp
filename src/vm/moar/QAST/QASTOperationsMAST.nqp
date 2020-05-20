@@ -2307,6 +2307,8 @@ QAST::MASTOperations.add_core_moarop_mapping('getaddrinfo', 'getaddrinfo');
 QAST::MASTOperations.add_core_moarop_mapping('addrfamily', 'addrfamily');
 QAST::MASTOperations.add_core_moarop_mapping('addrtype', 'addrtype');
 QAST::MASTOperations.add_core_moarop_mapping('addrprotocol', 'addrprotocol');
+QAST::MASTOperations.add_core_moarop_mapping('addrfrompres', 'addrfrompres');
+QAST::MASTOperations.add_core_moarop_mapping('addrtopres', 'addrtopres');
 
 QAST::MASTOperations.add_core_moarop_mapping('chmod', 'chmod_f', 0);
 QAST::MASTOperations.add_core_moarop_mapping('unlink', 'delete_f', 0);
