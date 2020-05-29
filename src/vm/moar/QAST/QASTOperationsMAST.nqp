@@ -2304,9 +2304,6 @@ QAST::MASTOperations.add_core_moarop_mapping('getport', 'getport_sk');
 QAST::MASTOperations.add_core_moarop_mapping('setbuffersizefh', 'setbuffersize_fh', 0);
 
 QAST::MASTOperations.add_core_moarop_mapping('getaddrinfo', 'getaddrinfo');
-QAST::MASTOperations.add_core_moarop_mapping('addrfamily', 'addrfamily');
-QAST::MASTOperations.add_core_moarop_mapping('addrtype', 'addrtype');
-QAST::MASTOperations.add_core_moarop_mapping('addrprotocol', 'addrprotocol');
 QAST::MASTOperations.add_core_moarop_mapping('addrfromipv4', 'addrfromipv4');
 QAST::MASTOperations.add_core_moarop_mapping('addrfromipv6', 'addrfromipv6');
 QAST::MASTOperations.add_core_moarop_mapping('addrfrompath', 'addrfrompath');
