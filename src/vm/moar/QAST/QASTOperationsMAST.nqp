@@ -2311,6 +2311,7 @@ QAST::MASTOperations.add_core_moarop_mapping('addrtopres', 'addrtopres');
 QAST::MASTOperations.add_core_moarop_mapping('addrport', 'addrport');
 QAST::MASTOperations.add_core_moarop_mapping('addrflowinfo', 'addrflowinfo');
 QAST::MASTOperations.add_core_moarop_mapping('addrscopeid', 'addrscopeid');
+QAST::MASTOperations.add_core_moarop_mapping('addrtonative', 'addrtonative');
 
 QAST::MASTOperations.add_core_moarop_mapping('chmod', 'chmod_f', 0);
 QAST::MASTOperations.add_core_moarop_mapping('unlink', 'delete_f', 0);
