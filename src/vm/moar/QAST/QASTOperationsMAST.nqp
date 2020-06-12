@@ -2304,8 +2304,8 @@ QAST::MASTOperations.add_core_moarop_mapping('getport', 'getport_sk');
 QAST::MASTOperations.add_core_moarop_mapping('setbuffersizefh', 'setbuffersize_fh', 0);
 
 QAST::MASTOperations.add_core_moarop_mapping('getaddrinfo', 'getaddrinfo');
-QAST::MASTOperations.add_core_moarop_mapping('addrfromipv4', 'addrfromipv4');
-QAST::MASTOperations.add_core_moarop_mapping('addrfromipv6', 'addrfromipv6');
+QAST::MASTOperations.add_core_moarop_mapping('addrfromipv4pres', 'addrfromipv4pres');
+QAST::MASTOperations.add_core_moarop_mapping('addrfromipv6pres', 'addrfromipv6pres');
 QAST::MASTOperations.add_core_moarop_mapping('addrfrompath', 'addrfrompath');
 QAST::MASTOperations.add_core_moarop_mapping('addrtopres', 'addrtopres');
 QAST::MASTOperations.add_core_moarop_mapping('addrport', 'addrport');
@@ -2313,6 +2313,8 @@ QAST::MASTOperations.add_core_moarop_mapping('addrflowinfo', 'addrflowinfo');
 QAST::MASTOperations.add_core_moarop_mapping('addrscopeid', 'addrscopeid');
 QAST::MASTOperations.add_core_moarop_mapping('addrtonative', 'addrtonative');
 QAST::MASTOperations.add_core_moarop_mapping('asyncdnsquery', 'asyncdnsquery');
+QAST::MASTOperations.add_core_moarop_mapping('addrfromipv4native', 'addrfromipv4native');
+QAST::MASTOperations.add_core_moarop_mapping('addrfromipv6native', 'addrfromipv6native');
 
 QAST::MASTOperations.add_core_moarop_mapping('chmod', 'chmod_f', 0);
 QAST::MASTOperations.add_core_moarop_mapping('unlink', 'delete_f', 0);
