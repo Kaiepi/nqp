@@ -2313,6 +2313,8 @@ QAST::MASTOperations.add_core_moarop_mapping('bindsock', 'bind_sk', 0);
 QAST::MASTOperations.add_core_moarop_mapping('accept', 'accept_sk');
 QAST::MASTOperations.add_core_moarop_mapping('getport', 'getport_sk');
 QAST::MASTOperations.add_core_moarop_mapping('setbuffersizefh', 'setbuffersize_fh', 0);
+QAST::MASTOperations.add_core_moarop_mapping('getsockname', 'getsockname');
+QAST::MASTOperations.add_core_moarop_mapping('getpeername', 'getpeername');
 
 QAST::MASTOperations.add_core_moarop_mapping('getaddrinfo', 'getaddrinfo');
 QAST::MASTOperations.add_core_moarop_mapping('addrfromipv4pres', 'addrfromipv4pres');
