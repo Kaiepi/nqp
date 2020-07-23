@@ -219,6 +219,7 @@ For generating an abstract tree that includes opcodes, see [docs/qast.markdown](
   * [fileislink](#fileislink)
   * [filereadable](#filereadable)
   * [filewritable](#filewritable)
+  * [addrfromstr_ip4](#addrfromstr_ip4)
   * [gethostname](#gethostname)
   * [getport](#getport-moar-jvm)
   * [link](#link)
@@ -435,6 +436,7 @@ correspond directly to NQP types.
 * Mu:T      - a type object, e.g. `Int`
 * Exception - an Exception object
 * Handle    - an I/O Handle object
+* Address   - an Address object (i.e. networking address)
 * Iterable  - something iterable
 * Context   - a Context object
 * LexPad    - a Context object
@@ -1895,6 +1897,11 @@ If not, returns 0. If an error occurs, return -1.
 
 If the specified filename refers to a writeable file, returns 1.
 If not, returns 0. If an error occurs, return -1.
+
+## addrfromstr_ip4
+* `addrfromstr_ip4(str $literal, int $port --> Address)`
+
+Creates an IPv4 address from an IPv4 literal and a port number.
 
 ## gethostname
 * `gethostname(str $str --> str)`
