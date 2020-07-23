@@ -220,6 +220,7 @@ For generating an abstract tree that includes opcodes, see [docs/qast.markdown](
   * [filereadable](#filereadable)
   * [filewritable](#filewritable)
   * [addrfromstr_ip4](#addrfromstr_ip4)
+  * [addrfromstr_ip6](#addrfromstr_ip6)
   * [gethostname](#gethostname)
   * [getport](#getport-moar-jvm)
   * [link](#link)
@@ -1902,6 +1903,11 @@ If not, returns 0. If an error occurs, return -1.
 * `addrfromstr_ip4(str $literal, int $port --> Address)`
 
 Creates an IPv4 address from an IPv4 literal and a port number.
+
+## addrfromstr_ip6
+* `addrfromstr_ip6(str $literal, int $port --> Address)`
+
+Creates an IPv6 address from an IPv6 literal and a port number.
 
 ## gethostname
 * `gethostname(str $str --> str)`
