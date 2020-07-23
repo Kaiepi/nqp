@@ -426,6 +426,23 @@ public final class Ops {
         return address;
     }
 
+    public static SixModelObject addrfromstr_ip6(final String literal, final long port, final ThreadContext tc) {
+        final InetAddress nativeAddress;
+        try {
+            nativeAddress = InetAddress.getByName(literal);
+            if (nativeAddress instanceof Inet4Address)
+                throw new UnknownHostException(literal);
+        } catch (UnknownHostException e) {
+            throw ExceptionHandling.dieInternal(tc, e);
+        }
+
+        final SixModelObject  BOOTAddress = tc.gc.BOOTAddress;
+        final AddressInstance address     = (AddressInstance)BOOTAddress.st.REPR.allocate(tc, BOOTAddress.st);
+        address.family  = AddressInstance.FAMILY_INET6;
+        address.storage = new InetSocketAddress(nativeAddress, (int)port);
+        return address;
+    }
+
     public static SixModelObject socket(long listener, ThreadContext tc) {
         SixModelObject IOType = tc.curFrame.codeRef.staticInfo.compUnit.hllConfig.ioType;
         IOHandleInstance h = (IOHandleInstance)IOType.st.REPR.allocate(tc, IOType.st);
