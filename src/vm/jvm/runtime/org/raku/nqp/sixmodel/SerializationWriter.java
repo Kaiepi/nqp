@@ -259,6 +259,12 @@ public class SerializationWriter {
         outputs[currentBuffer].putInt(idx);
     }
 
+    public void writeBytes(byte[] bytes) {
+        growToHold(currentBuffer, 8 + bytes.length);
+        outputs[currentBuffer].putInt(bytes.length);
+        outputs[currentBuffer].put(bytes);
+    }
+
     static class Accumulator {
         static Map<String, Accumulator> all = new HashMap<String, Accumulator>();
         long totalTime = 0;

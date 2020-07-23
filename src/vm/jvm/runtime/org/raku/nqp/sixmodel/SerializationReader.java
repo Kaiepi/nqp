@@ -706,6 +706,12 @@ public class SerializationReader {
         return lookupString(orig.getInt());
     }
 
+    public byte[] readBytes() {
+        byte[] bytes = new byte[orig.getInt()];
+        orig.get(bytes);
+        return bytes;
+    }
+
     private STable lookupSTable(int scIdx, int idx) {
         SerializationContext sc = locateSC(scIdx);
         if (idx < 0 || idx >= sc.stableCount())
