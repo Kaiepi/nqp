@@ -2299,6 +2299,7 @@ QAST::MASTOperations.add_core_moarop_mapping('filenofh', 'fileno_fh');
 QAST::MASTOperations.add_core_moarop_mapping('setbuffersizefh', 'setbuffersize_fh', 0);
 
 QAST::MASTOperations.add_core_moarop_mapping('addrfromstr_ip4', 'addrfromstr_ip4');
+QAST::MASTOperations.add_core_moarop_mapping('addrfromstr_ip6', 'addrfromstr_ip6');
 
 QAST::MASTOperations.add_core_moarop_mapping('socket', 'socket');
 QAST::MASTOperations.add_core_moarop_mapping('connect', 'connect_sk', 0);
