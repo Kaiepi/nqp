@@ -18,6 +18,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.net.InetAddress;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.BufferUnderflowException;
 import java.nio.CharBuffer;
@@ -85,6 +89,7 @@ import org.raku.nqp.sixmodel.SerializationWriter;
 import org.raku.nqp.sixmodel.SixModelObject;
 import org.raku.nqp.sixmodel.StorageSpec;
 import org.raku.nqp.sixmodel.TypeObject;
+import org.raku.nqp.sixmodel.reprs.AddressInstance;
 import org.raku.nqp.sixmodel.reprs.AsyncTaskInstance;
 import org.raku.nqp.sixmodel.reprs.CallCaptureInstance;
 import org.raku.nqp.sixmodel.reprs.ConcBlockingQueueInstance;
@@ -402,6 +407,23 @@ public final class Ops {
         IOHandleInstance h = (IOHandleInstance)IOType.st.REPR.allocate(tc, IOType.st);
         h.handle = new FileHandle(tc, path, mode);
         return h;
+    }
+
+    public static SixModelObject addrfromstr_ip4(final String literal, final long port, final ThreadContext tc) {
+        final InetAddress nativeAddress;
+        try {
+            nativeAddress = InetAddress.getByName(literal);
+            if (nativeAddress instanceof Inet6Address)
+                throw new UnknownHostException(literal);
+        } catch (UnknownHostException e) {
+            throw ExceptionHandling.dieInternal(tc, e);
+        }
+
+        final SixModelObject  BOOTAddress = tc.gc.BOOTAddress;
+        final AddressInstance address     = (AddressInstance)BOOTAddress.st.REPR.allocate(tc, BOOTAddress.st);
+        address.family  = AddressInstance.FAMILY_INET;
+        address.storage = new InetSocketAddress(nativeAddress, (int)port);
+        return address;
     }
 
     public static SixModelObject socket(long listener, ThreadContext tc) {
@@ -7358,5 +7380,4 @@ public final class Ops {
 
         return result;
     }
-
 }
