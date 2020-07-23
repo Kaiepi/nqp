@@ -41,6 +41,7 @@ import org.raku.nqp.sixmodel.reprs.AsyncTask;
 import org.raku.nqp.sixmodel.reprs.NativeRef;
 import org.raku.nqp.sixmodel.reprs.MultiDimArray;
 import org.raku.nqp.sixmodel.reprs.Decoder;
+import org.raku.nqp.sixmodel.reprs.Address;
 
 public class REPRRegistry {
     private static HashMap<String, Integer> reprIdMap = new HashMap<>();
@@ -106,5 +107,6 @@ public class REPRRegistry {
         addREPR("NativeRef", new NativeRef());
         addREPR("MultiDimArray", new MultiDimArray());
         addREPR("Decoder", new Decoder());
+        addREPR("Address", new Address());
     }
 }

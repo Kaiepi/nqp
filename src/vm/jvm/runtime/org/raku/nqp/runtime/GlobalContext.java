@@ -104,6 +104,11 @@ public class GlobalContext {
     public SixModelObject BOOTIO;
 
     /**
+     * BOOTAddress type; a basic, method-less type with the Address REPR.
+     */
+    public SixModelObject BOOTAddress;
+
+    /**
      * BOOTJava type; a basic, method-less type with the JavaWrap REPR.
      */
     public SixModelObject BOOTJava;
