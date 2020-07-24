@@ -467,6 +467,15 @@ public final class Ops {
         }
     }
 
+    public static long addrport(final SixModelObject obj, final ThreadContext tc) {
+        if (obj instanceof AddressInstance) {
+            final AddressInstance address = (AddressInstance)obj;
+            return (long)address.storage.getPort();
+        } else {
+            throw ExceptionHandling.dieInternal(tc, "addrport requires an object with the Address REPR");
+        }
+    }
+
     public static SixModelObject socket(long listener, ThreadContext tc) {
         SixModelObject IOType = tc.curFrame.codeRef.staticInfo.compUnit.hllConfig.ioType;
         IOHandleInstance h = (IOHandleInstance)IOType.st.REPR.allocate(tc, IOType.st);
