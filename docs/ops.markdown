@@ -224,6 +224,7 @@ For generating an abstract tree that includes opcodes, see [docs/qast.markdown](
   * [addrfromstr_un](#addrfromstr_un)
   * [addrtostr](#addrtostr)
   * [addrport](#addrport)
+  * [addrscopeid](#addrscopeid)
   * [gethostname](#gethostname)
   * [getport](#getport-moar-jvm)
   * [link](#link)
@@ -1928,6 +1929,11 @@ path (but only up to the first null byte).
 * `addrport(Address $address --> uint16)`
 Returns the port of an IP address. If the address is not an IP address, this
 should throw.
+
+## addrscopeid
+* `addrscopeid(Address $address --> uint32)`
+Returns the scope ID of an IPv6 address. If the address is not an IPv6 address,
+this should throw.
 
 ## gethostname
 * `gethostname(str $str --> str)`
