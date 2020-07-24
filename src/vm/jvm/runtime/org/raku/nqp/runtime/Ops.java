@@ -499,21 +499,21 @@ public final class Ops {
                 if (addressBuf.elems == 4) {
                     nativeAddressBuf.put(addressBuf.slots, 0, addressBuf.elems);
                 } else {
-                    throw ExceptionHandling.dieInternal(tc, "IPv4 address uint8 buffer must have a size of 4");
+                    throw ExceptionHandling.dieInternal(tc, "IPv4 address uint8 buffer must have 4 elements");
                 }
             } else if (obj instanceof VMArrayInstance_u16) {
                 final VMArrayInstance_u16 addressBuf = (VMArrayInstance_u16)obj;
                 if (addressBuf.elems == 2) {
                     nativeAddressBuf.asShortBuffer().put(addressBuf.slots, 0, addressBuf.elems);
                 } else {
-                    throw ExceptionHandling.dieInternal(tc, "IPv4 address uint16 buffer must have a size of 2");
+                    throw ExceptionHandling.dieInternal(tc, "IPv4 address uint16 buffer must have 2 elements");
                 }
             } else if (obj instanceof VMArrayInstance_u32) {
                 final VMArrayInstance_u32 addressBuf = (VMArrayInstance_u32)obj;
                 if (addressBuf.elems == 1) {
                     nativeAddressBuf.asIntBuffer().put(addressBuf.slots, 0, addressBuf.elems);
                 } else {
-                    throw ExceptionHandling.dieInternal(tc, "IPv4 address uint32 buffer must have a size of 1");
+                    throw ExceptionHandling.dieInternal(tc, "IPv4 address uint32 buffer must have 1 element");
                 }
             } else {
                 throw ExceptionHandling.dieInternal(tc, "IPv4 address buffer must be an array of uint8, uint16, or uint32");
