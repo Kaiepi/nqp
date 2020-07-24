@@ -222,6 +222,7 @@ For generating an abstract tree that includes opcodes, see [docs/qast.markdown](
   * [addrfromstr_ip4](#addrfromstr_ip4)
   * [addrfromstr_ip6](#addrfromstr_ip6)
   * [addrfromstr_un](#addrfromstr_un)
+  * [addrtostr](#addrtostr)
   * [gethostname](#gethostname)
   * [getport](#getport-moar-jvm)
   * [link](#link)
@@ -1914,6 +1915,13 @@ Creates an IPv6 address from an IPv6 literal and a port number.
 * `addrfromstr_un(str $path --> Address)`
 
 Creates a UNIX socket address from a path.
+
+## addrtostr
+* `addrtostr(Address $address --> str)`
+
+Coerces an address to a string. For IPv4 and IPv6 addreses, this will be the IP
+literal for the address; for UNIX socket addresses, this will be the address'
+path (but only up to the first null byte).
 
 ## gethostname
 * `gethostname(str $str --> str)`
