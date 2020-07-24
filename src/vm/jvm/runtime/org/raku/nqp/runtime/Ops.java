@@ -447,6 +447,26 @@ public final class Ops {
         throw ExceptionHandling.dieInternal(tc, "UNIX sockets are not supported by the JVM");
     }
 
+    public static String addrtostr(final SixModelObject obj, final ThreadContext tc) {
+        if (obj instanceof AddressInstance) {
+            final AddressInstance address = (AddressInstance)obj;
+            switch (address.family) {
+                case AddressInstance.FAMILY_INET: {
+                    final Inet4Address nativeAddress = (Inet4Address)address.storage.getAddress();
+                    return nativeAddress.getHostAddress();
+                }
+                case AddressInstance.FAMILY_INET6: {
+                    final Inet6Address nativeAddress = (Inet6Address)address.storage.getAddress();
+                    return nativeAddress.getHostAddress();
+                }
+                default:
+                    throw ExceptionHandling.dieInternal(tc, "Unknown address family: " + address.family);
+            }
+        } else {
+            throw ExceptionHandling.dieInternal(tc, "addrtostr requires an object with the Address REPR");
+        }
+    }
+
     public static SixModelObject socket(long listener, ThreadContext tc) {
         SixModelObject IOType = tc.curFrame.codeRef.staticInfo.compUnit.hllConfig.ioType;
         IOHandleInstance h = (IOHandleInstance)IOType.st.REPR.allocate(tc, IOType.st);
