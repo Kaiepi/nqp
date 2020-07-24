@@ -476,6 +476,20 @@ public final class Ops {
         }
     }
 
+    public static long addrscopeid(final SixModelObject obj, final ThreadContext tc) {
+        if (obj instanceof AddressInstance) {
+            final AddressInstance address = (AddressInstance)obj;
+            if (address.family == AddressInstance.FAMILY_INET6) {
+                final Inet6Address nativeAddress = (Inet6Address)address.storage.getAddress();
+                return (long)nativeAddress.getScopeId();
+            } else {
+                throw ExceptionHandling.dieInternal(tc, "Can only get the scope ID of an IPv6 address");
+            }
+        } else {
+            throw ExceptionHandling.dieInternal(tc, "addrscopeid requires an object with the Address REPR");
+        }
+    }
+
     public static SixModelObject socket(long listener, ThreadContext tc) {
         SixModelObject IOType = tc.curFrame.codeRef.staticInfo.compUnit.hllConfig.ioType;
         IOHandleInstance h = (IOHandleInstance)IOType.st.REPR.allocate(tc, IOType.st);

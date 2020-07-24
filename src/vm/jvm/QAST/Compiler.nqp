@@ -2213,6 +2213,7 @@ QAST::OperationsJAST.map_classlib_core_op('addrfromstr_ip6', $TYPE_OPS, 'addrfro
 QAST::OperationsJAST.map_classlib_core_op('addrfromstr_un', $TYPE_OPS, 'addrfromstr_un', [$RT_STR], $RT_OBJ, :tc);
 QAST::OperationsJAST.map_classlib_core_op('addrtostr', $TYPE_OPS, 'addrtostr', [$RT_OBJ], $RT_STR, :tc);
 QAST::OperationsJAST.map_classlib_core_op('addrport', $TYPE_OPS, 'addrport', [$RT_OBJ], $RT_INT, :tc);
+QAST::OperationsJAST.map_classlib_core_op('addrscopeid', $TYPE_OPS, 'addrscopeid', [$RT_OBJ], $RT_INT, :tc);
 
 QAST::OperationsJAST.map_classlib_core_op('socket', $TYPE_OPS, 'socket', [$RT_INT], $RT_OBJ, :tc);
 QAST::OperationsJAST.map_classlib_core_op('connect', $TYPE_OPS, 'connect', [$RT_OBJ, $RT_STR, $RT_INT, $RT_INT], $RT_OBJ, :tc);
