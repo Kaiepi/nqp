@@ -226,6 +226,7 @@ For generating an abstract tree that includes opcodes, see [docs/qast.markdown](
   * [addrport](#addrport)
   * [addrscopeid](#addrscopeid)
   * [addrfrombuf_ip4](#addrfrombuf_ip4)
+  * [addrfrombuf_ip6](#addrfrombuf_ip6)
   * [gethostname](#gethostname)
   * [getport](#getport-moar-jvm)
   * [link](#link)
@@ -1942,6 +1943,13 @@ this should throw.
 Creates an IPv4 address from its native representation and a port number.
 `$native` may either be a 4-element uint8 array, a 2-element uint16 array, or a
 1-element uint32 array.
+
+## addrfrombuf_ip6
+* `addrfrombuf_ip6(VMArray $native, int $port, str $zone-id --> Address)`
+
+Creates an IPv6 address from its native representation and a port number.
+`$native` may either be a 16-element uint8 array, an 8-element uint16 array, a
+4-element uint32 array, or a 2-element uint64 array.
 
 ## gethostname
 * `gethostname(str $str --> str)`
