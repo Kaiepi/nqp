@@ -228,6 +228,7 @@ For generating an abstract tree that includes opcodes, see [docs/qast.markdown](
   * [addrfrombuf_ip4](#addrfrombuf_ip4)
   * [addrfrombuf_ip6](#addrfrombuf_ip6)
   * [addrfrombuf_un](#addrfrombuf_un)
+  * [addrtobuf](#addrtobuf)
   * [gethostname](#gethostname)
   * [getport](#getport-moar-jvm)
   * [link](#link)
@@ -1957,6 +1958,14 @@ Creates an IPv6 address from its native representation and a port number.
 
 Creates a UNIX socket address from a buffer of characters. `$native` must be an
 array of int8.
+
+## addrtobuf
+* `addrtobuf(Address $address, VMArray $type --> VMArray)`
+
+Returns a native representation of the given address. For IPv4 addresses, this
+may be an array of uint8, uint16, or uint32; for IPv6 addresses, this may be an
+array of uint8, uint16, uint32 or uint64; for UNIX socket addresses, this may
+be an array of int8.
 
 ## gethostname
 * `gethostname(str $str --> str)`
