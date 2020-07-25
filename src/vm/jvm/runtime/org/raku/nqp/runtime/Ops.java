@@ -605,6 +605,10 @@ public final class Ops {
         }
     }
 
+    public static SixModelObject addrfrombuf_un(final SixModelObject obj, final ThreadContext tc) {
+        throw ExceptionHandling.dieInternal(tc, "UNIX sockets are not supported on the JVM");
+    }
+
     public static SixModelObject socket(long listener, ThreadContext tc) {
         SixModelObject IOType = tc.curFrame.codeRef.staticInfo.compUnit.hllConfig.ioType;
         IOHandleInstance h = (IOHandleInstance)IOType.st.REPR.allocate(tc, IOType.st);
