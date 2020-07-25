@@ -609,6 +609,77 @@ public final class Ops {
         throw ExceptionHandling.dieInternal(tc, "UNIX sockets are not supported on the JVM");
     }
 
+    public static SixModelObject addrtobuf(
+        final SixModelObject obj,
+        final SixModelObject bufType,
+        final ThreadContext  tc
+    ) {
+        if (obj instanceof AddressInstance) {
+            final AddressInstance address = (AddressInstance)obj;
+            if (bufType.st.REPR instanceof VMArray) {
+                final int nativeAddressLen;
+                switch (address.family) {
+                    case AddressInstance.FAMILY_INET:
+                        nativeAddressLen = 4;
+                        break;
+                    case AddressInstance.FAMILY_INET6:
+                        nativeAddressLen = 16;
+                        break;
+                    default:
+                        throw ExceptionHandling.dieInternal(tc, "Unknown address family: " + address.family);
+                }
+
+                final SixModelObject bufObj           = bufType.st.REPR.allocate(tc, bufType.st);
+                final InetAddress    nativeAddress    = address.storage.getAddress();
+                final ByteBuffer     nativeAddressBuf = ByteBuffer.allocate(nativeAddressLen);
+                nativeAddressBuf.put(nativeAddress.getAddress());
+                nativeAddressBuf.rewind();
+                if (bufObj instanceof VMArrayInstance_u8) {
+                    final VMArrayInstance_u8 buf = (VMArrayInstance_u8)bufObj;
+                    buf.elems = nativeAddressLen;
+                    buf.slots = new byte[nativeAddressLen];
+                    nativeAddressBuf.get(buf.slots);
+                    return buf;
+                } else if (bufObj instanceof VMArrayInstance_u16) {
+                    final VMArrayInstance_u16 buf = (VMArrayInstance_u16)bufObj;
+                    buf.elems = nativeAddressLen / 2;
+                    buf.slots = new short[nativeAddressLen / 2];
+                    nativeAddressBuf.asShortBuffer().get(buf.slots);
+                    return buf;
+                } else if (bufObj instanceof VMArrayInstance_u32) {
+                    final VMArrayInstance_u32 buf = (VMArrayInstance_u32)bufObj;
+                    buf.elems = nativeAddressLen / 4;
+                    buf.slots = new int[nativeAddressLen / 4];
+                    nativeAddressBuf.asIntBuffer().get(buf.slots);
+                    return buf;
+                } else if (bufObj instanceof VMArrayInstance_i
+                       && ((VMArrayREPRData)obj.st.REPRData).ss.is_unsigned != 0
+                       && address.family == AddressInstance.FAMILY_INET6) {
+                    final VMArrayInstance_i buf = (VMArrayInstance_i)bufObj;
+                    buf.elems = nativeAddressLen / 8;
+                    buf.slots = new long[nativeAddressLen / 8];
+                    nativeAddressBuf.asLongBuffer().get(buf.slots);
+                    return buf;
+                } else {
+                    switch (address.family) {
+                        case AddressInstance.FAMILY_INET:
+                            throw ExceptionHandling.dieInternal(tc,
+                                "IPv4 address buffer must be an array of uint8, uint16, uint32");
+                        case AddressInstance.FAMILY_INET6:
+                            throw ExceptionHandling.dieInternal(tc,
+                                "IPv6 address buffer must be an array of uint8, uint16, uint32, or uint64");
+                        default:
+                            throw ExceptionHandling.dieInternal(tc, "Unknown address family: " + address.family);
+                    }
+                }
+            } else {
+                throw ExceptionHandling.dieInternal(tc, "addrtobuf buffer type must have the VMArray REPR");
+            }
+        } else {
+            throw ExceptionHandling.dieInternal(tc, "addrtobuf address must be an object with REPR MVMAddress");
+        }
+    }
+
     public static SixModelObject socket(long listener, ThreadContext tc) {
         SixModelObject IOType = tc.curFrame.codeRef.staticInfo.compUnit.hllConfig.ioType;
         IOHandleInstance h = (IOHandleInstance)IOType.st.REPR.allocate(tc, IOType.st);
