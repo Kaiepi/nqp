@@ -73,6 +73,7 @@ import org.raku.nqp.io.IIOPossiblyTTY;
 import org.raku.nqp.io.SyncProcessHandle;
 import org.raku.nqp.io.ProcessChannel;
 import org.raku.nqp.io.ServerSocketHandle;
+import org.raku.nqp.io.SocketFamily;
 import org.raku.nqp.io.SocketHandle;
 import org.raku.nqp.io.StandardReadHandle;
 import org.raku.nqp.io.StandardWriteHandle;
@@ -425,7 +426,7 @@ public final class Ops {
 
         final SixModelObject  BOOTAddress = tc.gc.BOOTAddress;
         final AddressInstance address     = (AddressInstance)BOOTAddress.st.REPR.allocate(tc, BOOTAddress.st);
-        address.family  = AddressInstance.FAMILY_INET;
+        address.family  = SocketFamily.getByName("PF_INET");
         address.storage = new InetSocketAddress(nativeAddress, (int)port);
         return address;
     }
@@ -442,7 +443,7 @@ public final class Ops {
 
         final SixModelObject  BOOTAddress = tc.gc.BOOTAddress;
         final AddressInstance address     = (AddressInstance)BOOTAddress.st.REPR.allocate(tc, BOOTAddress.st);
-        address.family  = AddressInstance.FAMILY_INET6;
+        address.family  = SocketFamily.getByName("PF_INET6");
         address.storage = new InetSocketAddress(nativeAddress, (int)port);
         return address;
     }
@@ -454,17 +455,14 @@ public final class Ops {
     public static String addrtostr(final SixModelObject obj, final ThreadContext tc) {
         if (obj instanceof AddressInstance) {
             final AddressInstance address = (AddressInstance)obj;
-            switch (address.family) {
-                case AddressInstance.FAMILY_INET: {
-                    final Inet4Address nativeAddress = (Inet4Address)address.storage.getAddress();
-                    return nativeAddress.getHostAddress();
-                }
-                case AddressInstance.FAMILY_INET6: {
-                    final Inet6Address nativeAddress = (Inet6Address)address.storage.getAddress();
-                    return nativeAddress.getHostAddress();
-                }
-                default:
-                    throw ExceptionHandling.dieInternal(tc, "Unknown address family: " + address.family);
+            if (address.family.equals(SocketFamily.getByName("PF_INET"))) {
+                Inet4Address nativeAddress = (Inet4Address)address.storage.getAddress();
+                return nativeAddress.getHostAddress();
+            } else if (address.family.equals(SocketFamily.getByName("PF_INET6"))) {
+                Inet6Address nativeAddress = (Inet6Address)address.storage.getAddress();
+                return nativeAddress.getHostAddress();
+            } else {
+                throw ExceptionHandling.dieInternal(tc, "Unknown address family: " + address.family);
             }
         } else {
             throw ExceptionHandling.dieInternal(tc, "addrtostr requires an object with the Address REPR");
@@ -483,7 +481,7 @@ public final class Ops {
     public static long addrscopeid(final SixModelObject obj, final ThreadContext tc) {
         if (obj instanceof AddressInstance) {
             final AddressInstance address = (AddressInstance)obj;
-            if (address.family == AddressInstance.FAMILY_INET6) {
+            if (address.family.equals(SocketFamily.getByName("PF_INET6"))) {
                 final Inet6Address nativeAddress = (Inet6Address)address.storage.getAddress();
                 return (long)nativeAddress.getScopeId();
             } else {
@@ -531,7 +529,7 @@ public final class Ops {
 
             final SixModelObject  BOOTAddress = tc.gc.BOOTAddress;
             final AddressInstance address     = (AddressInstance)BOOTAddress.st.REPR.allocate(tc, BOOTAddress.st);
-            address.family  = AddressInstance.FAMILY_INET;
+            address.family  = SocketFamily.getByName("PF_INET");
             address.storage = new InetSocketAddress(nativeAddress, (int)port);
             return address;
         } else {
@@ -597,7 +595,7 @@ public final class Ops {
 
             final SixModelObject  BOOTAddress = tc.gc.BOOTAddress;
             final AddressInstance address     = (AddressInstance)BOOTAddress.st.REPR.allocate(tc, BOOTAddress.st);
-            address.family  = AddressInstance.FAMILY_INET6;
+            address.family  = SocketFamily.getByName("PF_INET6");
             address.storage = new InetSocketAddress(nativeAddress, (int)port);
             return address;
         } else {
@@ -618,15 +616,12 @@ public final class Ops {
             final AddressInstance address = (AddressInstance)obj;
             if (bufType.st.REPR instanceof VMArray) {
                 final int nativeAddressLen;
-                switch (address.family) {
-                    case AddressInstance.FAMILY_INET:
-                        nativeAddressLen = 4;
-                        break;
-                    case AddressInstance.FAMILY_INET6:
-                        nativeAddressLen = 16;
-                        break;
-                    default:
-                        throw ExceptionHandling.dieInternal(tc, "Unknown address family: " + address.family);
+                if (address.family.equals(SocketFamily.getByName("PF_INET"))) {
+                    nativeAddressLen = 4;
+                } else if (address.family.equals(SocketFamily.getByName("PF_INET6"))) {
+                    nativeAddressLen = 16;
+                } else {
+                    throw ExceptionHandling.dieInternal(tc, "Unknown address family: " + address.family);
                 }
 
                 final SixModelObject bufObj           = bufType.st.REPR.allocate(tc, bufType.st);
@@ -654,22 +649,21 @@ public final class Ops {
                     return buf;
                 } else if (bufObj instanceof VMArrayInstance_i
                        && ((VMArrayREPRData)obj.st.REPRData).ss.is_unsigned != 0
-                       && address.family == AddressInstance.FAMILY_INET6) {
+                       && address.family.equals(SocketFamily.getByName("PF_INET6"))) {
                     final VMArrayInstance_i buf = (VMArrayInstance_i)bufObj;
                     buf.elems = nativeAddressLen / 8;
                     buf.slots = new long[nativeAddressLen / 8];
                     nativeAddressBuf.asLongBuffer().get(buf.slots);
                     return buf;
                 } else {
-                    switch (address.family) {
-                        case AddressInstance.FAMILY_INET:
-                            throw ExceptionHandling.dieInternal(tc,
-                                "IPv4 address buffer must be an array of uint8, uint16, uint32");
-                        case AddressInstance.FAMILY_INET6:
-                            throw ExceptionHandling.dieInternal(tc,
-                                "IPv6 address buffer must be an array of uint8, uint16, uint32, or uint64");
-                        default:
-                            throw ExceptionHandling.dieInternal(tc, "Unknown address family: " + address.family);
+                    if (address.family.equals("PF_INET")) {
+                        throw ExceptionHandling.dieInternal(tc,
+                            "IPv4 address buffer must be an array of uint8, uint16, uint32");
+                    } else if (address.family.equals("PF_INET6")) {
+                        throw ExceptionHandling.dieInternal(tc,
+                            "IPv6 address buffer must be an array of uint8, uint16, uint32, or uint64");
+                    } else {
+                        throw ExceptionHandling.dieInternal(tc, "Unknown address family: " + address.family);
                     }
                 }
             } else {
