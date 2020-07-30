@@ -18,14 +18,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.net.InetAddress;
-import java.net.Inet4Address;
-import java.net.Inet6Address;
-import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
-import java.net.UnknownHostException;
-import java.net.SocketException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.BufferUnderflowException;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -61,6 +54,9 @@ import java.util.TimerTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.raku.nqp.io.IPAddressStorage;
+import org.raku.nqp.io.IPv4AddressStorage;
+import org.raku.nqp.io.IPv6AddressStorage;
 import org.raku.nqp.io.FileHandle;
 import org.raku.nqp.io.IIOBindable;
 import org.raku.nqp.io.IIOCancelable;
@@ -124,7 +120,6 @@ import org.raku.nqp.sixmodel.reprs.ReentrantMutexInstance;
 import org.raku.nqp.sixmodel.reprs.SCRefInstance;
 import org.raku.nqp.sixmodel.reprs.SemaphoreInstance;
 import org.raku.nqp.sixmodel.reprs.VMArray;
-import org.raku.nqp.sixmodel.reprs.VMArrayREPRData;
 import org.raku.nqp.sixmodel.reprs.VMArrayInstance;
 import org.raku.nqp.sixmodel.reprs.VMArrayInstance_i;
 import org.raku.nqp.sixmodel.reprs.VMArrayInstance_i16;
@@ -415,36 +410,16 @@ public final class Ops {
     }
 
     public static SixModelObject addrfromstr_ip4(final String literal, final long port, final ThreadContext tc) {
-        final InetAddress nativeAddress;
-        try {
-            nativeAddress = InetAddress.getByName(literal);
-            if (nativeAddress instanceof Inet6Address)
-                throw new UnknownHostException(literal);
-        } catch (UnknownHostException e) {
-            throw ExceptionHandling.dieInternal(tc, e);
-        }
-
         final SixModelObject  BOOTAddress = tc.gc.BOOTAddress;
         final AddressInstance address     = (AddressInstance)BOOTAddress.st.REPR.allocate(tc, BOOTAddress.st);
-        address.family  = SocketFamily.getByName("PF_INET");
-        address.storage = new InetSocketAddress(nativeAddress, (int)port);
+        address.storage = IPv4AddressStorage.fromString(tc, literal, (int)port);
         return address;
     }
 
     public static SixModelObject addrfromstr_ip6(final String literal, final long port, final ThreadContext tc) {
-        final InetAddress nativeAddress;
-        try {
-            nativeAddress = InetAddress.getByName(literal);
-            if (nativeAddress instanceof Inet4Address)
-                throw new UnknownHostException(literal);
-        } catch (UnknownHostException e) {
-            throw ExceptionHandling.dieInternal(tc, e);
-        }
-
         final SixModelObject  BOOTAddress = tc.gc.BOOTAddress;
         final AddressInstance address     = (AddressInstance)BOOTAddress.st.REPR.allocate(tc, BOOTAddress.st);
-        address.family  = SocketFamily.getByName("PF_INET6");
-        address.storage = new InetSocketAddress(nativeAddress, (int)port);
+        address.storage = IPv6AddressStorage.fromString(tc, literal, (int)port);
         return address;
     }
 
@@ -455,14 +430,11 @@ public final class Ops {
     public static String addrtostr(final SixModelObject obj, final ThreadContext tc) {
         if (obj instanceof AddressInstance) {
             final AddressInstance address = (AddressInstance)obj;
-            if (address.family.equals(SocketFamily.getByName("PF_INET"))) {
-                Inet4Address nativeAddress = (Inet4Address)address.storage.getAddress();
-                return nativeAddress.getHostAddress();
-            } else if (address.family.equals(SocketFamily.getByName("PF_INET6"))) {
-                Inet6Address nativeAddress = (Inet6Address)address.storage.getAddress();
-                return nativeAddress.getHostAddress();
+            if (address.storage instanceof IPAddressStorage) {
+                final IPAddressStorage storage = (IPAddressStorage)address.storage;
+                return storage.toString(tc);
             } else {
-                throw ExceptionHandling.dieInternal(tc, "Unknown address family: " + address.family);
+                throw ExceptionHandling.dieInternal(tc, "Unsupported socket family: " + address.storage.getFamily());
             }
         } else {
             throw ExceptionHandling.dieInternal(tc, "addrtostr requires an object with the Address REPR");
@@ -472,7 +444,12 @@ public final class Ops {
     public static long addrport(final SixModelObject obj, final ThreadContext tc) {
         if (obj instanceof AddressInstance) {
             final AddressInstance address = (AddressInstance)obj;
-            return (long)address.storage.getPort();
+            if (address.storage instanceof IPAddressStorage) {
+                final IPAddressStorage storage = (IPAddressStorage)address.storage;
+                return (long)storage.getPort();
+            } else {
+                throw ExceptionHandling.dieInternal(tc, "Unsupported socket family: " + address.storage.getFamily());
+            }
         } else {
             throw ExceptionHandling.dieInternal(tc, "addrport requires an object with the Address REPR");
         }
@@ -481,9 +458,9 @@ public final class Ops {
     public static long addrscopeid(final SixModelObject obj, final ThreadContext tc) {
         if (obj instanceof AddressInstance) {
             final AddressInstance address = (AddressInstance)obj;
-            if (address.family.equals(SocketFamily.getByName("PF_INET6"))) {
-                final Inet6Address nativeAddress = (Inet6Address)address.storage.getAddress();
-                return (long)nativeAddress.getScopeId();
+            if (address.storage instanceof IPv6AddressStorage) {
+                final IPv6AddressStorage storage = (IPv6AddressStorage)address.storage;
+                return (long)storage.getScopeId();
             } else {
                 throw ExceptionHandling.dieInternal(tc, "Can only get the scope ID of an IPv6 address");
             }
@@ -492,45 +469,15 @@ public final class Ops {
         }
     }
 
-    public static SixModelObject addrfrombuf_ip4(final SixModelObject obj, final long port, final ThreadContext tc) {
+    public static SixModelObject addrfrombuf_ip4(
+        final SixModelObject obj,
+        final long           port,
+        final ThreadContext  tc
+    ) {
         if (obj.st.REPR instanceof VMArray) {
-            final ByteBuffer nativeAddressBuf = ByteBuffer.allocate(4);
-            if (obj instanceof VMArrayInstance_u8) {
-                final VMArrayInstance_u8 addressBuf = (VMArrayInstance_u8)obj;
-                if (addressBuf.elems == 4) {
-                    nativeAddressBuf.put(addressBuf.slots, 0, addressBuf.elems);
-                } else {
-                    throw ExceptionHandling.dieInternal(tc, "IPv4 address uint8 buffer must have 4 elements");
-                }
-            } else if (obj instanceof VMArrayInstance_u16) {
-                final VMArrayInstance_u16 addressBuf = (VMArrayInstance_u16)obj;
-                if (addressBuf.elems == 2) {
-                    nativeAddressBuf.asShortBuffer().put(addressBuf.slots, 0, addressBuf.elems);
-                } else {
-                    throw ExceptionHandling.dieInternal(tc, "IPv4 address uint16 buffer must have 2 elements");
-                }
-            } else if (obj instanceof VMArrayInstance_u32) {
-                final VMArrayInstance_u32 addressBuf = (VMArrayInstance_u32)obj;
-                if (addressBuf.elems == 1) {
-                    nativeAddressBuf.asIntBuffer().put(addressBuf.slots, 0, addressBuf.elems);
-                } else {
-                    throw ExceptionHandling.dieInternal(tc, "IPv4 address uint32 buffer must have 1 element");
-                }
-            } else {
-                throw ExceptionHandling.dieInternal(tc, "IPv4 address buffer must be an array of uint8, uint16, or uint32");
-            }
-
-            final Inet4Address nativeAddress;
-            try {
-                nativeAddress = (Inet4Address)Inet4Address.getByAddress(nativeAddressBuf.array());
-            } catch (UnknownHostException e) {
-                throw ExceptionHandling.dieInternal(tc, e);
-            }
-
             final SixModelObject  BOOTAddress = tc.gc.BOOTAddress;
             final AddressInstance address     = (AddressInstance)BOOTAddress.st.REPR.allocate(tc, BOOTAddress.st);
-            address.family  = SocketFamily.getByName("PF_INET");
-            address.storage = new InetSocketAddress(nativeAddress, (int)port);
+            address.storage = IPv4AddressStorage.fromBuffer(tc, obj, (int)port);
             return address;
         } else {
             throw ExceptionHandling.dieInternal(tc, "addrfrombuf_ip4 requires an object with the VMArray REPR");
@@ -544,59 +491,9 @@ public final class Ops {
         final ThreadContext  tc
     ) {
         if (obj.st.REPR instanceof VMArray) {
-            final ByteBuffer nativeAddressBuf = ByteBuffer.allocate(16);
-            if (obj instanceof VMArrayInstance_u8) {
-                final VMArrayInstance_u8 addressBuf = (VMArrayInstance_u8)obj;
-                if (addressBuf.elems == 16) {
-                    nativeAddressBuf.put(addressBuf.slots, 0, addressBuf.elems);
-                } else {
-                    throw ExceptionHandling.dieInternal(tc, "IPv6 address uint8 buffer must have 16 elements");
-                }
-            } else if (obj instanceof VMArrayInstance_u16) {
-                final VMArrayInstance_u16 addressBuf = (VMArrayInstance_u16)obj;
-                if (addressBuf.elems == 8) {
-                    nativeAddressBuf.asShortBuffer().put(addressBuf.slots, 0, addressBuf.elems);
-                } else {
-                    throw ExceptionHandling.dieInternal(tc, "IPv6 address uint16 buffer must have 8 elements");
-                }
-            } else if (obj instanceof VMArrayInstance_u32) {
-                final VMArrayInstance_u32 addressBuf = (VMArrayInstance_u32)obj;
-                if (addressBuf.elems == 4) {
-                    nativeAddressBuf.asIntBuffer().put(addressBuf.slots, 0, addressBuf.elems);
-                } else {
-                    throw ExceptionHandling.dieInternal(tc, "IPv6 address uint32 buffer must have 4 elements");
-                }
-            } else if (obj instanceof VMArrayInstance_i && ((VMArrayREPRData)obj.st.REPRData).ss.is_unsigned != 0) {
-                final VMArrayInstance_i addressBuf = (VMArrayInstance_i)obj;
-                if (addressBuf.elems == 2) {
-                    nativeAddressBuf.asLongBuffer().put(addressBuf.slots, 0, addressBuf.elems);
-                } else {
-                    throw ExceptionHandling.dieInternal(tc, "IPv6 address uint64 buffer must have 4 elements");
-                }
-            } else {
-                throw ExceptionHandling.dieInternal(tc, "IPv6 address buffer must be an array of uint8, uint16, uint32, or uint64");
-            }
-
-            final NetworkInterface nif;
-            try {
-                nif = NetworkInterface.getByIndex((int)scopeId);
-            } catch (SocketException e) {
-                throw ExceptionHandling.dieInternal(tc, e);
-            } catch (IllegalArgumentException e) {
-                throw ExceptionHandling.dieInternal(tc, e);
-            }
-
-            final Inet6Address nativeAddress;
-            try {
-                nativeAddress = Inet6Address.getByAddress("", nativeAddressBuf.array(), nif);
-            } catch (UnknownHostException e) {
-                throw ExceptionHandling.dieInternal(tc, e);
-            }
-
             final SixModelObject  BOOTAddress = tc.gc.BOOTAddress;
             final AddressInstance address     = (AddressInstance)BOOTAddress.st.REPR.allocate(tc, BOOTAddress.st);
-            address.family  = SocketFamily.getByName("PF_INET6");
-            address.storage = new InetSocketAddress(nativeAddress, (int)port);
+            address.storage = IPv6AddressStorage.fromBuffer(tc, obj, (int)port, (int)scopeId);
             return address;
         } else {
             throw ExceptionHandling.dieInternal(tc, "addrfrombuf_ip4 requires an object with the VMArray REPR");
@@ -604,7 +501,7 @@ public final class Ops {
     }
 
     public static SixModelObject addrfrombuf_un(final SixModelObject obj, final ThreadContext tc) {
-        throw ExceptionHandling.dieInternal(tc, "UNIX sockets are not supported on the JVM");
+        throw ExceptionHandling.dieInternal(tc, "UNIX sockets are not supported by the JVM");
     }
 
     public static SixModelObject addrtobuf(
@@ -615,56 +512,15 @@ public final class Ops {
         if (obj instanceof AddressInstance) {
             final AddressInstance address = (AddressInstance)obj;
             if (bufType.st.REPR instanceof VMArray) {
-                final int nativeAddressLen;
-                if (address.family.equals(SocketFamily.getByName("PF_INET"))) {
-                    nativeAddressLen = 4;
-                } else if (address.family.equals(SocketFamily.getByName("PF_INET6"))) {
-                    nativeAddressLen = 16;
+                if (address.storage instanceof IPv4AddressStorage) {
+                    final IPv4AddressStorage storage = (IPv4AddressStorage)address.storage;
+                    return storage.toBuffer(tc, bufType);
+                } else if (address.storage instanceof IPv6AddressStorage) {
+                    final IPv6AddressStorage storage = (IPv6AddressStorage)address.storage;
+                    return storage.toBuffer(tc, bufType);
                 } else {
-                    throw ExceptionHandling.dieInternal(tc, "Unknown address family: " + address.family);
-                }
-
-                final SixModelObject bufObj           = bufType.st.REPR.allocate(tc, bufType.st);
-                final InetAddress    nativeAddress    = address.storage.getAddress();
-                final ByteBuffer     nativeAddressBuf = ByteBuffer.allocate(nativeAddressLen);
-                nativeAddressBuf.put(nativeAddress.getAddress());
-                nativeAddressBuf.rewind();
-                if (bufObj instanceof VMArrayInstance_u8) {
-                    final VMArrayInstance_u8 buf = (VMArrayInstance_u8)bufObj;
-                    buf.elems = nativeAddressLen;
-                    buf.slots = new byte[nativeAddressLen];
-                    nativeAddressBuf.get(buf.slots);
-                    return buf;
-                } else if (bufObj instanceof VMArrayInstance_u16) {
-                    final VMArrayInstance_u16 buf = (VMArrayInstance_u16)bufObj;
-                    buf.elems = nativeAddressLen / 2;
-                    buf.slots = new short[nativeAddressLen / 2];
-                    nativeAddressBuf.asShortBuffer().get(buf.slots);
-                    return buf;
-                } else if (bufObj instanceof VMArrayInstance_u32) {
-                    final VMArrayInstance_u32 buf = (VMArrayInstance_u32)bufObj;
-                    buf.elems = nativeAddressLen / 4;
-                    buf.slots = new int[nativeAddressLen / 4];
-                    nativeAddressBuf.asIntBuffer().get(buf.slots);
-                    return buf;
-                } else if (bufObj instanceof VMArrayInstance_i
-                       && ((VMArrayREPRData)obj.st.REPRData).ss.is_unsigned != 0
-                       && address.family.equals(SocketFamily.getByName("PF_INET6"))) {
-                    final VMArrayInstance_i buf = (VMArrayInstance_i)bufObj;
-                    buf.elems = nativeAddressLen / 8;
-                    buf.slots = new long[nativeAddressLen / 8];
-                    nativeAddressBuf.asLongBuffer().get(buf.slots);
-                    return buf;
-                } else {
-                    if (address.family.equals("PF_INET")) {
-                        throw ExceptionHandling.dieInternal(tc,
-                            "IPv4 address buffer must be an array of uint8, uint16, uint32");
-                    } else if (address.family.equals("PF_INET6")) {
-                        throw ExceptionHandling.dieInternal(tc,
-                            "IPv6 address buffer must be an array of uint8, uint16, uint32, or uint64");
-                    } else {
-                        throw ExceptionHandling.dieInternal(tc, "Unknown address family: " + address.family);
-                    }
+                    throw ExceptionHandling.dieInternal(tc,
+                        "Unsupported socket family: " + address.storage.getFamily());
                 }
             } else {
                 throw ExceptionHandling.dieInternal(tc, "addrtobuf buffer type must have the VMArray REPR");

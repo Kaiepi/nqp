@@ -3,10 +3,11 @@ package org.raku.nqp.sixmodel.reprs;
 import java.net.InetAddress;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
-import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 
+import org.raku.nqp.io.IPAddressStorage;
+import org.raku.nqp.io.IPv4AddressStorage;
+import org.raku.nqp.io.IPv6AddressStorage;
 import org.raku.nqp.io.SocketFamily;
 import org.raku.nqp.runtime.ExceptionHandling;
 import org.raku.nqp.runtime.ThreadContext;
@@ -44,55 +45,49 @@ public class Address extends REPR {
     @Override
     public void deserialize_finish(ThreadContext tc, STable st,
                                    SerializationReader reader, SixModelObject obj) {
-        AddressInstance address = (AddressInstance)obj;
-        address.family = SocketFamily.getByValue((short)reader.readInt32());
-        if (address.family.equals(SocketFamily.getByName("PF_INET"))) {
-            String      hostname      = reader.readStr();
-            byte[]      raw           = reader.readBytes();
-            int         port          = reader.readInt32();
-            InetAddress nativeAddress = null;
-            try {
-                nativeAddress = Inet4Address.getByAddress(hostname, raw);
-            } catch (UnknownHostException e) {
-                throw ExceptionHandling.dieInternal(tc, e);
-            }
-            address.storage = new InetSocketAddress(nativeAddress, port);
-        } else if (address.family.equals(SocketFamily.getByName("PF_INET6"))) {
-            String      hostname      = reader.readStr();
-            byte[]      raw           = reader.readBytes();
-            int         port          = reader.readInt32();
-            int         scopeId       = reader.readInt32();
-            InetAddress nativeAddress = null;
-            try {
-                nativeAddress = Inet6Address.getByAddress(hostname, raw, scopeId);
-            } catch (UnknownHostException e) {
-                throw ExceptionHandling.dieInternal(tc, e);
-            }
-            address.storage = new InetSocketAddress(nativeAddress, port);
+        final AddressInstance address     = (AddressInstance)obj;
+        final short           familyValue = (short)reader.readInt32();
+        final SocketFamily    family      = SocketFamily.getByValue(familyValue);
+        if (family == null) {
+            throw ExceptionHandling.dieInternal(tc, "Unsupported socket family: " + familyValue);
+        } else if (family.equals(SocketFamily.getByName("PF_INET"))) {
+            final String hostname = reader.readStr();
+            final byte[] raw      = reader.readBytes();
+            final int    port     = reader.readInt32();
+            address.storage = IPv4AddressStorage.fromNativeBuffer(tc, hostname, raw, port);
+        } else if (family.equals(SocketFamily.getByName("PF_INET6"))) {
+            final String hostname = reader.readStr();
+            final byte[] raw      = reader.readBytes();
+            final int    port     = reader.readInt32();
+            final int    scopeId  = reader.readInt32();
+            address.storage = IPv6AddressStorage.fromNativeBuffer(tc, hostname, raw, port, scopeId);
         } else {
-            throw ExceptionHandling.dieInternal(tc, "Unsupported address family: " + address.family);
+            throw ExceptionHandling.dieInternal(tc, "Unsupported address family: " + address.storage.getFamily());
         }
     }
 
     @Override
     public void serialize(ThreadContext tc, SerializationWriter writer, SixModelObject obj) {
-        AddressInstance address = (AddressInstance)obj;
-        writer.writeInt32((int)address.family.getValue());
-        if (address.family.equals(SocketFamily.getByName("PF_INET"))) {
-            Inet4Address nativeAddress = (Inet4Address)address.storage.getAddress();
-            int          port          = address.storage.getPort();
+        final AddressInstance address = (AddressInstance)obj;
+        writer.writeInt32((int)address.storage.getFamily().getValue());
+        if (address.storage instanceof IPv4AddressStorage) {
+            final IPv4AddressStorage storage       = (IPv4AddressStorage)address.storage;
+            final Inet4Address       nativeAddress = storage.getAddress();
+            final int                port          = storage.getPort();
             writer.writeStr(nativeAddress.getHostName());
             writer.writeBytes(nativeAddress.getAddress());
             writer.writeInt32(port);
-        } else if (address.family.equals(SocketFamily.getByName("PF_INET6"))) {
-            Inet6Address nativeAddress = (Inet6Address)address.storage.getAddress();
-            int          port          = address.storage.getPort();
+        } else if (address.storage instanceof IPv6AddressStorage) {
+            final IPv6AddressStorage storage       = (IPv6AddressStorage)address.storage;
+            final Inet6Address       nativeAddress = storage.getAddress();
+            final int                port          = storage.getPort();
+            final int                scopeId       = storage.getScopeId();
             writer.writeStr(nativeAddress.getHostName());
             writer.writeBytes(nativeAddress.getAddress());
             writer.writeInt32(port);
-            writer.writeInt32(nativeAddress.getScopeId());
+            writer.writeInt32(scopeId);
         } else {
-            throw ExceptionHandling.dieInternal(tc, "Unsupported address family: " + address.family);
+            throw ExceptionHandling.dieInternal(tc, "Unsupported address family: " + address.storage.getFamily());
         }
     }
 }
