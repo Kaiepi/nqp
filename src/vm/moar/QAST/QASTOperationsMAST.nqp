@@ -2252,6 +2252,17 @@ my %const_map := nqp::hash(
     'SOCKET_FAMILY_INET',         1,
     'SOCKET_FAMILY_INET6',        2,
     'SOCKET_FAMILY_UNIX',         3,
+
+    'SOCKET_TYPE_ANY',            0,
+    'SOCKET_TYPE_STREAM',         1,
+    'SOCKET_TYPE_DGRAM',          2,
+    'SOCKET_TYPE_RAW',            3,
+    'SOCKET_TYPE_RDM',            4,
+    'SOCKET_TYPE_SEQPACKET',      5,
+
+    'SOCKET_PROTOCOL_ANY',        0,
+    'SOCKET_PROTOCOL_TCP',        1,
+    'SOCKET_PROTOCOL_UDP',        2,
 );
 QAST::MASTOperations.add_core_op('const', -> $qastcomp, $op {
     if nqp::existskey(%const_map, $op.name) {
