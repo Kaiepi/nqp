@@ -229,6 +229,7 @@ For generating an abstract tree that includes opcodes, see [docs/qast.markdown](
   * [addrfrombuf_ip6](#addrfrombuf_ip6)
   * [addrfrombuf_un](#addrfrombuf_un)
   * [addrtobuf](#addrtobuf)
+  * [dnsresolve](#dnsresolve)
   * [gethostname](#gethostname)
   * [getport](#getport-moar-jvm)
   * [link](#link)
@@ -1966,6 +1967,18 @@ Returns a native representation of the given address. For IPv4 addresses, this
 may be an array of uint8, uint16, or uint32; for IPv6 addresses, this may be an
 array of uint8, uint16, uint32 or uint64; for UNIX socket addresses, this may
 be an array of int8.
+
+## dnsresolve
+* `dnsresolve(str $hostname, int $port, int $family, int $type, int $protocol, int $passive --> VMArray)`
+
+Performs a DNS resolution at the OS level given a hostname, returning a list of
+tuples of an address family, an address, a socket family, a socket type, and a
+socket protocol.
+
+`$family` must be the value of a `SocketFamily` enum value, `$type` `$type`
+must be the value of a `SocketType` enum, and `$protocol` must be the value of
+a `SocketProtocol` enum value. `$passive` determines the default hostname
+selected should `$hostname` be null.
 
 ## gethostname
 * `gethostname(str $str --> str)`
