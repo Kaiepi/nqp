@@ -2320,6 +2320,8 @@ QAST::MASTOperations.add_core_moarop_mapping('addrfrombuf_ip6', 'addrfrombuf_ip6
 QAST::MASTOperations.add_core_moarop_mapping('addrfrombuf_un', 'addrfrombuf_un');
 QAST::MASTOperations.add_core_moarop_mapping('addrtobuf', 'addrtobuf');
 
+QAST::MASTOperations.add_core_moarop_mapping('dnsresolve', 'dnsresolve');
+
 QAST::MASTOperations.add_core_moarop_mapping('socket', 'socket');
 QAST::MASTOperations.add_core_moarop_mapping('connect', 'connect_sk', 0);
 QAST::MASTOperations.add_core_moarop_mapping('bindsock', 'bind_sk', 0);
