@@ -13,7 +13,7 @@ import org.raku.nqp.sixmodel.reprs.VMArrayInstance_u16;
 import org.raku.nqp.sixmodel.reprs.VMArrayInstance_u32;
 
 public final class IPv4AddressStorage extends IPAddressStorage<Inet4Address> {
-    IPv4AddressStorage(final Inet4Address address, final int port) {
+    public IPv4AddressStorage(final Inet4Address address, final int port) {
         super(SocketFamily.getByName("PF_INET"), address, port);
     }
 

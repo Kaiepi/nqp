@@ -66,11 +66,14 @@ import org.raku.nqp.io.IIOSeekable;
 import org.raku.nqp.io.IIOSyncReadable;
 import org.raku.nqp.io.IIOSyncWritable;
 import org.raku.nqp.io.IIOPossiblyTTY;
+import org.raku.nqp.io.ResolutionContext;
 import org.raku.nqp.io.SyncProcessHandle;
 import org.raku.nqp.io.ProcessChannel;
 import org.raku.nqp.io.ServerSocketHandle;
 import org.raku.nqp.io.SocketFamily;
 import org.raku.nqp.io.SocketHandle;
+import org.raku.nqp.io.SocketProtocol;
+import org.raku.nqp.io.SocketType;
 import org.raku.nqp.io.StandardReadHandle;
 import org.raku.nqp.io.StandardWriteHandle;
 import org.raku.nqp.jast2bc.JASTCompiler;
@@ -527,6 +530,30 @@ public final class Ops {
             }
         } else {
             throw ExceptionHandling.dieInternal(tc, "addrtobuf address must be an object with REPR MVMAddress");
+        }
+    }
+
+    public static SixModelObject dnsresolve(
+        final String        hostname,
+        final long          port,
+        final long          familyValue,
+        final long          typeValue,
+        final long          protocolValue,
+        final long          isPassiveValue,
+        final ThreadContext tc
+    ) {
+        final SocketFamily   family    = SocketFamily.getByValue((short)familyValue);
+        final SocketType     type      = SocketType.getByValue((int)typeValue);
+        final SocketProtocol protocol  = SocketProtocol.getByValue((int)protocolValue);
+        final Boolean        isPassive = isPassiveValue != 0;
+        if (family == null) {
+            throw ExceptionHandling.dieInternal(tc, "Unknown socket family: " + familyValue);
+        } else if (type == null) {
+            throw ExceptionHandling.dieInternal(tc, "Unknown socket type: " + typeValue);
+        } else if (protocol == null) {
+            throw ExceptionHandling.dieInternal(tc, "Unknown socket protocol: " + protocolValue);
+        } else {
+            return ResolutionContext.resolve(tc, hostname, (int)port, family, type, protocol, isPassive);
         }
     }
 

@@ -2230,6 +2230,8 @@ QAST::OperationsJAST.map_classlib_core_op('addrfrombuf_ip6', $TYPE_OPS, 'addrfro
 QAST::OperationsJAST.map_classlib_core_op('addrfrombuf_un', $TYPE_OPS, 'addrfrombuf_un', [$RT_OBJ], $RT_OBJ, :tc);
 QAST::OperationsJAST.map_classlib_core_op('addrtobuf', $TYPE_OPS, 'addrtobuf', [$RT_OBJ, $RT_OBJ], $RT_OBJ, :tc);
 
+QAST::OperationsJAST.map_classlib_core_op('dnsresolve', $TYPE_OPS, 'dnsresolve', [$RT_STR, $RT_INT, $RT_INT, $RT_INT, $RT_INT, $RT_INT], $RT_OBJ, :tc);
+
 QAST::OperationsJAST.map_classlib_core_op('socket', $TYPE_OPS, 'socket', [$RT_INT], $RT_OBJ, :tc);
 QAST::OperationsJAST.map_classlib_core_op('connect', $TYPE_OPS, 'connect', [$RT_OBJ, $RT_STR, $RT_INT, $RT_INT], $RT_OBJ, :tc);
 QAST::OperationsJAST.map_classlib_core_op('bindsock', $TYPE_OPS, 'bindsock', [$RT_OBJ, $RT_STR, $RT_INT, $RT_INT, $RT_INT], $RT_OBJ, :tc);

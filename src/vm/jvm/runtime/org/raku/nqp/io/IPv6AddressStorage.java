@@ -17,7 +17,7 @@ import org.raku.nqp.sixmodel.reprs.VMArrayInstance_u16;
 import org.raku.nqp.sixmodel.reprs.VMArrayInstance_u32;
 
 public final class IPv6AddressStorage extends IPAddressStorage<Inet6Address> {
-    IPv6AddressStorage(final Inet6Address address, final int port) {
+    public IPv6AddressStorage(final Inet6Address address, final int port) {
         super(SocketFamily.getByName("PF_INET6"), address, port);
     }
 
