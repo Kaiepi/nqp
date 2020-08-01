@@ -1,12 +1,13 @@
 package org.raku.nqp.io;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
 import org.raku.nqp.runtime.ExceptionHandling;
 import org.raku.nqp.runtime.ThreadContext;
+import org.raku.nqp.sixmodel.reprs.AddressInstance;
 
 public class ServerSocketHandle implements IIOBindable, IIOClosable {
 
@@ -22,10 +23,9 @@ public class ServerSocketHandle implements IIOBindable, IIOClosable {
     }
 
     @Override
-    public void bind(ThreadContext tc, String host, int port, int backlog) {
+    public void bind(final ThreadContext tc, final SocketAddress address, final int backlog) {
         try {
-            InetSocketAddress addr = new InetSocketAddress(host, port);
-            listenChan.bind(addr, backlog);
+            listenChan.bind(address, backlog);
             listenPort = listenChan.socket().getLocalPort();
         } catch (IOException e) {
             throw ExceptionHandling.dieInternal(tc, e);

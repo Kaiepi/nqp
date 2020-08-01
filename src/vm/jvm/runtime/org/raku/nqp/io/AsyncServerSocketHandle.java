@@ -2,6 +2,7 @@ package org.raku.nqp.io;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
@@ -30,12 +31,9 @@ public class AsyncServerSocketHandle implements IIOBindable, IIOCancelable {
     }
 
     @Override
-    public void bind(ThreadContext tc, String host, int port, int backlog) {
+    public void bind(final ThreadContext tc, final SocketAddress address, final int backlog) {
         try {
-            InetSocketAddress addr = new InetSocketAddress(host, port);
-            listenChan.bind(addr, backlog);
-        } catch (UnresolvedAddressException uae) {
-            ExceptionHandling.dieInternal(tc, "Failed to resolve host name");
+            listenChan.bind(address, backlog);
         } catch (IOException e) {
             throw ExceptionHandling.dieInternal(tc, e);
         }

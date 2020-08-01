@@ -10,7 +10,10 @@ import java.util.Map;
 import org.raku.nqp.io.AsyncProcessHandle;
 import org.raku.nqp.io.AsyncServerSocketHandle;
 import org.raku.nqp.io.AsyncSocketHandle;
+import org.raku.nqp.io.IPAddressStorage;
+import org.raku.nqp.io.SocketFamily;
 import org.raku.nqp.sixmodel.SixModelObject;
+import org.raku.nqp.sixmodel.reprs.AddressInstance;
 import org.raku.nqp.sixmodel.reprs.AsyncTaskInstance;
 import org.raku.nqp.sixmodel.reprs.IOHandleInstance;
 
@@ -170,34 +173,76 @@ public final class IOOps {
         throw new UnsupportedOperationException("watchfile is not yet implemented.");
     }
 
-    public static SixModelObject asyncconnect(SixModelObject queue, SixModelObject schedulee,
-            String host, long port, SixModelObject asyncType, ThreadContext tc) {
+    private static final SocketFamily PF_UNIX = SocketFamily.getByName("PF_UNIX");
 
-        AsyncTaskInstance task = (AsyncTaskInstance) asyncType.st.REPR.allocate(tc, asyncType.st);
-        task.queue = queue;
-        task.schedulee = schedulee;
-
-        AsyncSocketHandle handle = new AsyncSocketHandle(tc);
-        task.handle = handle;
-        handle.connect(tc, host, (int) port, task);
-
-        return task;
+    public static SixModelObject asyncconnect(
+        final SixModelObject queue,
+        final SixModelObject schedulee,
+        final SixModelObject addressObj,
+        final long           familyValue,
+        final SixModelObject asyncType,
+        final ThreadContext  tc
+    ) {
+        if (addressObj instanceof AddressInstance) {
+            final AddressInstance address = (AddressInstance)addressObj;
+            if (address.storage instanceof IPAddressStorage) {
+                final IPAddressStorage storage = (IPAddressStorage)address.storage;
+                final SocketFamily     family  = SocketFamily.getByValue((short)familyValue);
+                if (family == null) {
+                    throw ExceptionHandling.dieInternal(tc, "Unknown socket family: " + familyValue);
+                } else if (family.equals(PF_UNIX)) {
+                    throw ExceptionHandling.dieInternal(tc, "UNIX sockets are not supported by the JVM");
+                } else {
+                    final AsyncSocketHandle handle = new AsyncSocketHandle(tc);
+                    final AsyncTaskInstance task   = (AsyncTaskInstance)asyncType.st.REPR.allocate(tc, asyncType.st);
+                    task.queue     = queue;
+                    task.schedulee = schedulee;
+                    task.handle    = handle;
+                    handle.connect(tc, storage.asSocketAddress(), task);
+                    return task;
+                }
+            } else {
+                throw ExceptionHandling.dieInternal(tc, "Unsupported socket family: " + address.storage.getFamily());
+            }
+        } else {
+            throw ExceptionHandling.dieInternal(tc, "asyncconnect address must be an object with the Address REPR");
+        }
     }
 
-    public static SixModelObject asynclisten(SixModelObject queue, SixModelObject schedulee,
-            String host, long port, long backlog, SixModelObject asyncType, ThreadContext tc) {
-
-        AsyncTaskInstance task = (AsyncTaskInstance) asyncType.st.REPR.allocate(tc, asyncType.st);
-        task.queue = queue;
-        task.schedulee = schedulee;
-
-        AsyncServerSocketHandle handle = new AsyncServerSocketHandle(tc);
-        task.handle = handle;
-
-        handle.bind(tc, host, (int) port, (int) backlog);
-        handle.accept(tc, task);
-
-        return task;
+    public static SixModelObject asynclisten(
+        final SixModelObject queue,
+        final SixModelObject schedulee,
+        final SixModelObject addressObj,
+        final long           familyValue,
+        final long           backlog,
+        final SixModelObject asyncType,
+        final ThreadContext  tc
+    ) {
+        if (addressObj instanceof AddressInstance) {
+            final AddressInstance address = (AddressInstance)addressObj;
+            if (address.storage instanceof IPAddressStorage) {
+                final IPAddressStorage storage = (IPAddressStorage)address.storage;
+                final SocketFamily     family  = SocketFamily.getByValue((short)familyValue);
+                if (family == null) {
+                    throw ExceptionHandling.dieInternal(tc, "Unknown socket family: " + familyValue);
+                } else if (family.equals(PF_UNIX)) {
+                    throw ExceptionHandling.dieInternal(tc, "UNIX sockets are not supported by the JVM");
+                } else {
+                    final AsyncServerSocketHandle handle = new AsyncServerSocketHandle(tc);
+                    final AsyncTaskInstance       task   = (AsyncTaskInstance)asyncType.st.REPR.allocate(tc, asyncType.st);
+                    task.queue     = queue;
+                    task.schedulee = schedulee;
+                    task.handle    = handle;
+                    handle.bind(tc, storage.asSocketAddress(), (int)backlog);
+                    handle.accept(tc, task);
+                    return task;
+                }
+            } else {
+                throw ExceptionHandling.dieInternal(tc, "Unsupported socket address: " + address.storage.getFamily());
+            }
+        } else {
+            throw ExceptionHandling.dieInternal(tc, "asynclisten address must be an object with the Address REPR");
+        }
     }
 
     public static SixModelObject asyncwritebytes(SixModelObject handle, SixModelObject queue,

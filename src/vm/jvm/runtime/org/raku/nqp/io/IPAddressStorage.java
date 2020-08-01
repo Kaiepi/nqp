@@ -1,6 +1,8 @@
 package org.raku.nqp.io;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 import org.raku.nqp.runtime.ThreadContext;
 
@@ -28,5 +30,13 @@ public abstract class IPAddressStorage<T extends InetAddress> extends AddressSto
     @Override
     public final String toString(final ThreadContext tc) {
         return address.getHostAddress();
+    }
+
+    /**
+     * Creates an InetSocketAddress using the address and port stored.
+     */
+    @Override
+    public final SocketAddress asSocketAddress() {
+        return new InetSocketAddress(address, port);
     }
 }

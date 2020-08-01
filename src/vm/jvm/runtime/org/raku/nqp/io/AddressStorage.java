@@ -1,5 +1,7 @@
 package org.raku.nqp.io;
 
+import java.net.SocketAddress;
+
 import org.raku.nqp.runtime.ThreadContext;
 import org.raku.nqp.sixmodel.SixModelObject;
 
@@ -38,4 +40,9 @@ public abstract class AddressStorage<T> {
      * Creates a VMArray buffer representing the stored address.
      */
     public abstract SixModelObject toBuffer(final ThreadContext tc, final SixModelObject bufType);
+
+    /**
+     * Returns a SocketAddress representation of the stored address.
+     */
+    public abstract SocketAddress asSocketAddress();
 }

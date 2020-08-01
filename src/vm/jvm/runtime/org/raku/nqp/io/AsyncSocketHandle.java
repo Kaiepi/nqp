@@ -2,6 +2,7 @@ package org.raku.nqp.io;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.AsynchronousSocketChannel;
@@ -33,9 +34,7 @@ public class AsyncSocketHandle implements IIOClosable, IIOCancelable {
         this.channel = channel;
     }
 
-    public void connect(final ThreadContext tc, String host, int port,
-            final AsyncTaskInstance task) {
-
+    public void connect(final ThreadContext tc, final SocketAddress address, final AsyncTaskInstance task) {
         final CompletionHandler<Void, AsyncTaskInstance> handler
             = new CompletionHandler<Void, AsyncTaskInstance>() {
 
@@ -53,10 +52,10 @@ public class AsyncSocketHandle implements IIOClosable, IIOCancelable {
                         IOType.st);
                 ioHandle.handle = task.handle;
                 callback(curTC, task, ioHandle, Str,
-                    Ops.box_s(host, Str, curTC),
-                    Ops.box_i(port, Int, curTC),
-                    Ops.box_s(host, Str, curTC),  // TODO send socketHost
-                    Ops.box_i(port, Int, curTC)   // TODO send socketPort
+                    Ops.box_s(((InetSocketAddress)address).getAddress().getHostAddress(), Str, curTC),
+                    Ops.box_i(((InetSocketAddress)address).getPort(), Int, curTC),
+                    Ops.box_s(((InetSocketAddress)address).getAddress().getHostAddress(), Str, curTC),  // TODO send socketHost
+                    Ops.box_i(((InetSocketAddress)address).getPort(), Int, curTC)   // TODO send socketPort
                 );
             }
 
@@ -84,8 +83,7 @@ public class AsyncSocketHandle implements IIOClosable, IIOCancelable {
         };
 
         try {
-            InetSocketAddress addr = new InetSocketAddress(host, port);
-            channel.connect(addr, task, handler);
+            channel.connect(address, task, handler);
         } catch (Throwable e) {
             throw ExceptionHandling.dieInternal(tc, e);
         }

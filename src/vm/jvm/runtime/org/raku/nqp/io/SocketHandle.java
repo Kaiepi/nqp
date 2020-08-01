@@ -1,7 +1,7 @@
 package org.raku.nqp.io;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 
@@ -24,10 +24,9 @@ public class SocketHandle extends SyncHandle {
         setEncoding(tc, Charset.forName("UTF-8"));
     }
 
-    public void connect(ThreadContext tc, String host, int port) {
+    public void connect(final ThreadContext tc, final SocketAddress address) {
         try {
-            InetSocketAddress addr = new InetSocketAddress(host, port);
-            ((SocketChannel)chan).connect(addr);
+            ((SocketChannel)chan).connect(address);
         } catch (IOException e) {
             throw ExceptionHandling.dieInternal(tc, e);
         }

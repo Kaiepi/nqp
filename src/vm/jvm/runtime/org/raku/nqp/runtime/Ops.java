@@ -571,63 +571,111 @@ public final class Ops {
         return h;
     }
 
-	public static final int SOCKET_FAMILY_UNSPEC = 0;
-	public static final int SOCKET_FAMILY_INET   = 1;
-	public static final int SOCKET_FAMILY_INET6  = 2;
-	public static final int SOCKET_FAMILY_UNIX   = 3;
+    private static final SocketFamily PF_UNSPEC = SocketFamily.getByName("PF_UNSPEC");
+    private static final SocketFamily PF_INET   = SocketFamily.getByName("PF_INET");
+    private static final SocketFamily PF_INET6  = SocketFamily.getByName("PF_INET6");
+    private static final SocketFamily PF_UNIX   = SocketFamily.getByName("PF_UNIX");
 
-    public static SixModelObject connect(SixModelObject obj, String host, long port, long family, ThreadContext tc) {
-        IOHandleInstance h = (IOHandleInstance)obj;
+    private static final SocketType SOCK_ANY    = SocketType.getByName("SOCK_ANY");
+    private static final SocketType SOCK_STREAM = SocketType.getByName("SOCK_STREAM");
 
-		switch ((int) family) {
-			case SOCKET_FAMILY_UNSPEC:
-			case SOCKET_FAMILY_INET:
-			case SOCKET_FAMILY_INET6:
-				if (h.handle instanceof SocketHandle) {
-					((SocketHandle)h.handle).connect(tc, host, (int) port);
-				} else {
-					ExceptionHandling.dieInternal(tc,
-						"This handle does not support connect");
-				}
-				break;
-			case SOCKET_FAMILY_UNIX:
-				ExceptionHandling.dieInternal(tc,
-					"UNIX sockets are not supported on the JVM");
-				break;
-			default:
-				ExceptionHandling.dieInternal(tc,
-					"Unsupported socket family: " + Long.toString(family));
-				break;
-		}
+    private static final SocketProtocol IPPROTO_ANY = SocketProtocol.getByName("IPPROTO_ANY");
+    private static final SocketProtocol IPPROTO_TCP = SocketProtocol.getByName("IPPROTO_TCP");
 
-        return obj;
+    private static final void validateSocketConstants(
+        final ThreadContext  tc,
+        final String         op,
+        final long           familyValue,
+        final long           typeValue,
+        final long           protocolValue
+    ) {
+        final SocketFamily   family   = SocketFamily.getByValue((short)familyValue);
+        final SocketType     type     = SocketType.getByValue((int)typeValue);
+        final SocketProtocol protocol = SocketProtocol.getByValue((int)protocolValue);
+        if (family == null) {
+            throw ExceptionHandling.dieInternal(tc, "Unknown socket family: " + familyValue);
+        } else if (type == null) {
+            throw ExceptionHandling.dieInternal(tc, "Unknown socket type: " + typeValue);
+        } else if (protocol == null) {
+            throw ExceptionHandling.dieInternal(tc, "Unknown socket protocol: " + protocolValue);
+        } else if (family.equals(PF_UNIX)) {
+            throw ExceptionHandling.dieInternal(tc, "UNIX sockets are not supported by the JVM");
+        } else if (type.equals(SOCK_ANY)) {
+            throw ExceptionHandling.dieInternal(tc, op + " must have a socket type specified");
+        } else if (!type.equals(SOCK_STREAM)) {
+            throw ExceptionHandling.dieInternal(tc, type + " JVM support NYI");
+        } else if (!protocol.equals(IPPROTO_ANY) && !protocol.equals(IPPROTO_TCP)) {
+            throw ExceptionHandling.dieInternal(tc, protocol + " JVM support NYI");
+        }
     }
 
-    public static SixModelObject bindsock(SixModelObject obj, String host, long port, long family, long backlog, ThreadContext tc) {
-        IOHandleInstance h = (IOHandleInstance)obj;
+    public static SixModelObject connect(
+        final SixModelObject handleObj,
+        final SixModelObject addressObj,
+        final long           familyValue,
+        final long           typeValue,
+        final long           protocolValue,
+        final ThreadContext  tc
+    ) {
+        if (handleObj instanceof IOHandleInstance) {
+            final IOHandleInstance h = (IOHandleInstance)handleObj;
+            if (addressObj instanceof AddressInstance) {
+                final AddressInstance address = (AddressInstance)addressObj;
+                if (address.storage instanceof IPAddressStorage) {
+                    final IPAddressStorage storage = (IPAddressStorage)address.storage;
+                    validateSocketConstants(tc, "connect", familyValue, typeValue, protocolValue);
+                    if (h.handle instanceof SocketHandle) {
+                        ((SocketHandle)h.handle).connect(tc, storage.asSocketAddress());
+                        return h;
+                    } else {
+                        throw ExceptionHandling.dieInternal(tc,
+                            "connect may not be called on passive sockets");
+                    }
+                } else {
+                    throw ExceptionHandling.dieInternal(tc,
+                        "Unsupported socket family: " + address.storage.getFamily());
+                }
+            } else {
+                throw ExceptionHandling.dieInternal(tc,
+                    "connect address must be an object with the Address REPR");
+            }
+        } else {
+            throw ExceptionHandling.dieInternal(tc,
+                "connect handle must be an object with the IOHandle REPR");
+        }
+    }
 
-		switch ((int) family) {
-			case SOCKET_FAMILY_UNSPEC:
-			case SOCKET_FAMILY_INET:
-			case SOCKET_FAMILY_INET6:
-				if (h.handle instanceof IIOBindable) {
-					((IIOBindable)h.handle).bind(tc, host, (int) port, (int) backlog);
-				} else {
-					ExceptionHandling.dieInternal(tc,
-						"This handle does not support bind");
-				}
-				break;
-			case SOCKET_FAMILY_UNIX:
-				ExceptionHandling.dieInternal(tc,
-					"UNIX sockets are not supported on the JVM");
-				break;
-			default:
-				ExceptionHandling.dieInternal(tc,
-					"Unsupported socket family: " + Long.toString(family));
-				break;
-		}
-
-        return obj;
+    public static SixModelObject bindsock(
+        final SixModelObject handleObj,
+        final SixModelObject addressObj,
+        final long           familyValue,
+        final long           typeValue,
+        final long           protocolValue,
+        final long           backlog,
+        final ThreadContext  tc
+    ) {
+        if (handleObj instanceof IOHandleInstance) {
+            final IOHandleInstance h = (IOHandleInstance)handleObj;
+            if (addressObj instanceof AddressInstance) {
+                final AddressInstance address = (AddressInstance)addressObj;
+                validateSocketConstants(tc, "bind", familyValue, typeValue, protocolValue);
+                if (address.storage instanceof IPAddressStorage) {
+                    final IPAddressStorage storage = (IPAddressStorage)address.storage;
+                    if (h.handle instanceof IIOBindable) {
+                        ((IIOBindable)h.handle).bind(tc, storage.asSocketAddress(), (int)backlog);
+                        return h;
+                    } else {
+                        throw ExceptionHandling.dieInternal(tc, "bindsock may not be called on active sockets");
+                    }
+                } else {
+                    throw ExceptionHandling.dieInternal(tc, "Unsupported socket family: " + address.storage.getFamily());
+                }
+            } else {
+                throw ExceptionHandling.dieInternal(tc, "bindsock address must be an object with the Address REPR");
+            }
+		} else {
+            throw ExceptionHandling.dieInternal(tc, "bindsock handle must be an object with the IOHandle REPR");
+        }
     }
 
     public static SixModelObject accept(SixModelObject obj, ThreadContext tc) {
