@@ -2327,6 +2327,8 @@ QAST::MASTOperations.add_core_moarop_mapping('connect', 'connect_sk', 0);
 QAST::MASTOperations.add_core_moarop_mapping('bindsock', 'bind_sk', 0);
 QAST::MASTOperations.add_core_moarop_mapping('accept', 'accept_sk');
 QAST::MASTOperations.add_core_moarop_mapping('getport', 'getport_sk');
+QAST::MASTOperations.add_core_moarop_mapping('getsockname', 'getsockname');
+QAST::MASTOperations.add_core_moarop_mapping('getpeername', 'getpeername');
 
 QAST::MASTOperations.add_core_moarop_mapping('chmod', 'chmod_f', 0);
 QAST::MASTOperations.add_core_moarop_mapping('unlink', 'delete_f', 0);
