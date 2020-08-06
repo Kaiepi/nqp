@@ -18,6 +18,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.net.InetAddress;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.BufferUnderflowException;
 import java.nio.CharBuffer;
@@ -58,6 +61,7 @@ import org.raku.nqp.io.IPAddressStorage;
 import org.raku.nqp.io.IPv4AddressStorage;
 import org.raku.nqp.io.IPv6AddressStorage;
 import org.raku.nqp.io.FileHandle;
+import org.raku.nqp.io.IIOAddressable;
 import org.raku.nqp.io.IIOBindable;
 import org.raku.nqp.io.IIOCancelable;
 import org.raku.nqp.io.IIOClosable;
@@ -704,6 +708,68 @@ public final class Ops {
                 "This handle does not support getport");
         }
         return -1;
+    }
+
+    public static SixModelObject getsockname(final SixModelObject obj, final ThreadContext tc) {
+        if (obj instanceof IOHandleInstance) {
+            final IOHandleInstance h = (IOHandleInstance)obj;
+            if (h.handle instanceof IIOAddressable) {
+                final SixModelObject BOOTArray   = tc.gc.BOOTArray;
+                final SixModelObject BOOTInt     = tc.gc.BOOTInt;
+                final SixModelObject BOOTAddress = tc.gc.BOOTAddress;
+
+                final IIOAddressable    addressable   = (IIOAddressable)h.handle;
+                final InetSocketAddress socketAddress = (InetSocketAddress)addressable.getLocalAddress(tc); // XXX
+                final InetAddress       nativeAddress = socketAddress.getAddress();
+                final int               port          = socketAddress.getPort();
+                final AddressInstance   address       = (AddressInstance)BOOTAddress.st.REPR.allocate(tc, BOOTAddress.st);
+                if (nativeAddress instanceof Inet6Address) {
+                    address.storage = new IPv6AddressStorage((Inet6Address)nativeAddress, port);
+                } else {
+                    address.storage = new IPv4AddressStorage((Inet4Address)nativeAddress, port);
+                }
+
+                final SixModelObject arr = BOOTArray.st.REPR.allocate(tc, BOOTArray.st);
+                arr.push_boxed(tc, Ops.box_i(address.storage.getFamily().getValue(), BOOTInt, tc));
+                arr.push_boxed(tc, address);
+                return arr;
+            } else {
+                throw ExceptionHandling.dieInternal(tc, "Cannot get the local address of this type of handle");
+            }
+        } else {
+            throw ExceptionHandling.dieInternal(tc, "getsockname handle must be an object with the IOHandle REPR");
+        }
+    }
+
+    public static SixModelObject getpeername(final SixModelObject obj, final ThreadContext tc) {
+        if (obj instanceof IOHandleInstance) {
+            final IOHandleInstance h = (IOHandleInstance)obj;
+            if (h.handle instanceof IIOAddressable) {
+                final SixModelObject BOOTArray   = tc.gc.BOOTArray;
+                final SixModelObject BOOTInt     = tc.gc.BOOTInt;
+                final SixModelObject BOOTAddress = tc.gc.BOOTAddress;
+
+                final IIOAddressable    addressable   = (IIOAddressable)h.handle;
+                final InetSocketAddress socketAddress = (InetSocketAddress)addressable.getRemoteAddress(tc); // XXX
+                final InetAddress       nativeAddress = socketAddress.getAddress();
+                final int               port          = socketAddress.getPort();
+                final AddressInstance   address       = (AddressInstance)BOOTAddress.st.REPR.allocate(tc, BOOTAddress.st);
+                if (nativeAddress instanceof Inet6Address) {
+                    address.storage = new IPv6AddressStorage((Inet6Address)nativeAddress, port);
+                } else {
+                    address.storage = new IPv4AddressStorage((Inet4Address)nativeAddress, port);
+                }
+
+                final SixModelObject arr = BOOTArray.st.REPR.allocate(tc, BOOTArray.st);
+                arr.push_boxed(tc, Ops.box_i(address.storage.getFamily().getValue(), BOOTInt, tc));
+                arr.push_boxed(tc, address);
+                return arr;
+            } else {
+                throw ExceptionHandling.dieInternal(tc, "Cannot get the local address of this type of handle");
+            }
+        } else {
+            throw ExceptionHandling.dieInternal(tc, "getsockname handle must be an object with the IOHandle REPR");
+        }
     }
 
     public static long filereadable(String path, ThreadContext tc) {

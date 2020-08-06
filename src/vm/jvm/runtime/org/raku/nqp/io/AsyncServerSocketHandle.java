@@ -5,9 +5,11 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.NotYetBoundException;
 import java.nio.channels.UnresolvedAddressException;
+import java.util.Optional;
 
 import org.raku.nqp.runtime.ExceptionHandling;
 import org.raku.nqp.runtime.HLLConfig;
@@ -18,7 +20,7 @@ import org.raku.nqp.sixmodel.reprs.AsyncTaskInstance;
 import org.raku.nqp.sixmodel.reprs.ConcBlockingQueueInstance;
 import org.raku.nqp.sixmodel.reprs.IOHandleInstance;
 
-public class AsyncServerSocketHandle implements IIOBindable, IIOCancelable {
+public class AsyncServerSocketHandle implements IIOBindable, IIOCancelable, IIOAddressable {
 
     AsynchronousServerSocketChannel listenChan;
 
@@ -166,6 +168,25 @@ public class AsyncServerSocketHandle implements IIOBindable, IIOCancelable {
         } catch (NotYetBoundException e) {
             throw ExceptionHandling.dieInternal(tc, e);
         }
+    }
+
+    @Override
+    public SocketAddress getLocalAddress(final ThreadContext tc) {
+        try {
+            return Optional.ofNullable(listenChan.getLocalAddress())
+                           .orElseThrow(() -> ExceptionHandling.dieInternal(tc,
+                               "No local address for this socket exists. " +
+                               "It may not be bound yet, or IPv6 may be misconfigured."));
+        } catch (ClosedChannelException e) {
+            throw ExceptionHandling.dieInternal(tc, e);
+        } catch (IOException e) {
+            throw ExceptionHandling.dieInternal(tc, e);
+        }
+    }
+
+    @Override
+    public SocketAddress getRemoteAddress(final ThreadContext tc) {
+        throw ExceptionHandling.dieInternal(tc, "Cannot get the remote address of a passive socket");
     }
 
     @Override

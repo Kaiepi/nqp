@@ -6,8 +6,10 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.ClosedChannelException;
+import java.util.Optional;
 
 import org.raku.nqp.runtime.Buffers;
 import org.raku.nqp.runtime.ExceptionHandling;
@@ -19,7 +21,7 @@ import org.raku.nqp.sixmodel.reprs.AsyncTaskInstance;
 import org.raku.nqp.sixmodel.reprs.ConcBlockingQueueInstance;
 import org.raku.nqp.sixmodel.reprs.IOHandleInstance;
 
-public class AsyncSocketHandle implements IIOClosable, IIOCancelable {
+public class AsyncSocketHandle implements IIOClosable, IIOCancelable, IIOAddressable {
     private AsynchronousSocketChannel channel;
 
     public AsyncSocketHandle(ThreadContext tc) {
@@ -85,6 +87,34 @@ public class AsyncSocketHandle implements IIOClosable, IIOCancelable {
         try {
             channel.connect(address, task, handler);
         } catch (Throwable e) {
+            throw ExceptionHandling.dieInternal(tc, e);
+        }
+    }
+
+    @Override
+    public SocketAddress getLocalAddress(final ThreadContext tc) {
+        try {
+            return Optional.ofNullable(channel.getLocalAddress())
+                           .orElseThrow(() -> ExceptionHandling.dieInternal(tc,
+                               "No local address for this socket exists. " +
+                               "It may not be connected yet, or IPv6 may be misconfigured."));
+        } catch (ClosedChannelException e) {
+            throw ExceptionHandling.dieInternal(tc, e);
+        } catch (IOException e) {
+            throw ExceptionHandling.dieInternal(tc, e);
+        }
+    }
+
+    @Override
+    public SocketAddress getRemoteAddress(final ThreadContext tc) {
+        try {
+            return Optional.ofNullable(channel.getRemoteAddress())
+                           .orElseThrow(() -> ExceptionHandling.dieInternal(tc,
+                               "No remote address for this socket exists. " +
+                               "It may not be connected yet, or IPv6 may be misconfigured."));
+        } catch (ClosedChannelException e) {
+            throw ExceptionHandling.dieInternal(tc, e);
+        } catch (IOException e) {
             throw ExceptionHandling.dieInternal(tc, e);
         }
     }
