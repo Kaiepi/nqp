@@ -1,14 +1,13 @@
 package org.raku.nqp.io;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.NotYetBoundException;
-import java.nio.channels.UnresolvedAddressException;
 import java.util.Optional;
 
 import org.raku.nqp.runtime.ExceptionHandling;
@@ -42,122 +41,51 @@ public class AsyncServerSocketHandle implements IIOBindable, IIOCancelable, IIOA
     }
 
     public void accept(final ThreadContext tc, final AsyncTaskInstance task) {
+        final HLLConfig      hllConfig = tc.curFrame.codeRef.staticInfo.compUnit.hllConfig;
+        final SixModelObject Array     = hllConfig.listType;
+        final SixModelObject Str       = hllConfig.strBoxType;
+        final SixModelObject IOType    = hllConfig.ioType;
 
-        final CompletionHandler<AsynchronousSocketChannel, AsyncTaskInstance> handler
-            = new CompletionHandler<AsynchronousSocketChannel, AsyncTaskInstance>() {
-
-            HLLConfig hllConfig = tc.curFrame.codeRef.staticInfo.compUnit.hllConfig;
-            final SixModelObject IOType = hllConfig.ioType;
-            final SixModelObject Array = hllConfig.listType;
-            final SixModelObject Null = hllConfig.nullValue;
-            final SixModelObject Int = hllConfig.intBoxType;
-            final SixModelObject Str = hllConfig.strBoxType;
-
+        final CompletionHandler<AsynchronousSocketChannel, AsyncTaskInstance> handler = new CompletionHandler<>() {
             @Override
-            public void completed(AsynchronousSocketChannel channel, AsyncTaskInstance task) {
-                listenChan.accept(task, this);
+            public void completed(final AsynchronousSocketChannel channel, final AsyncTaskInstance task) {
+                final ThreadContext    curTC      = tc.gc.getCurrentThreadContext();
+                final IOHandleInstance connection = (IOHandleInstance)IOType.st.REPR.allocate(curTC, IOType.st);
+                connection.handle = new AsyncSocketHandle(curTC, channel);
 
-                InetSocketAddress localAddress;
-                InetSocketAddress remoteAddress;
-
-                try {
-                    localAddress = (InetSocketAddress) channel.getLocalAddress();
-                } catch (IOException e) {
-                    throw ExceptionHandling.dieInternal(tc, e);
-                }
-                String socketHost = localAddress.getAddress().getHostAddress();
-                if (socketHost.equals("0:0:0:0:0:0:0:1"))
-                    socketHost = "::1";
-                int socketPort = localAddress.getPort();
-
-                try {
-                    remoteAddress = (InetSocketAddress) channel.getRemoteAddress();
-                } catch (IOException e) {
-                    throw ExceptionHandling.dieInternal(tc, e);
-                }
-                String peerHost = remoteAddress.getAddress().getHostAddress();
-                if (peerHost.equals("0:0:0:0:0:0:0:1"))
-                    peerHost = "::1";
-                int peerPort = remoteAddress.getPort();
-
-                ThreadContext curTC = tc.gc.getCurrentThreadContext();
-
-                AsyncSocketHandle clientHandle = new AsyncSocketHandle(curTC, channel);
-                IOHandleInstance clientIoHandle = (IOHandleInstance) IOType.st.REPR.allocate(curTC,
-                        IOType.st);
-                clientIoHandle.handle = clientHandle;
-
-                IOHandleInstance serverIoHandle = (IOHandleInstance) IOType.st.REPR.allocate(curTC,
-                        IOType.st);
-                serverIoHandle.handle = this;
-
-                SixModelObject result = Array.st.REPR.allocate(curTC, Array.st);
+                final SixModelObject result = Array.st.REPR.allocate(curTC, Array.st);
                 result.push_boxed(curTC, task.schedulee);
-                result.push_boxed(curTC, clientIoHandle);
-                result.push_boxed(curTC, Null);
-                result.push_boxed(curTC, Ops.box_s(peerHost, Str, curTC));
-                result.push_boxed(curTC, Ops.box_i(peerPort, Int, curTC));
-                result.push_boxed(curTC, serverIoHandle);
-                result.push_boxed(curTC, Ops.box_s(socketHost, Str, curTC));
-                result.push_boxed(curTC, Ops.box_i(socketPort, Int, curTC));
-
-                ((ConcBlockingQueueInstance) task.queue).push_boxed(curTC, result);
+                result.push_boxed(curTC, Str);
+                result.push_boxed(curTC, IOType);
+                result.push_boxed(curTC, connection);
+                ((ConcBlockingQueueInstance)task.queue).push_boxed(curTC, result);
+                listenChan.accept(task, this);
             }
 
             @Override
-            public void failed(Throwable exc, AsyncTaskInstance task) {
-                ThreadContext curTC = tc.gc.getCurrentThreadContext();
-                SixModelObject result = Array.st.REPR.allocate(curTC, Array.st);
-                result.push_boxed(curTC, task.schedulee);
-                result.push_boxed(curTC, IOType);
-                result.push_boxed(curTC, Ops.box_s(exc.toString(), Str, curTC));
-                result.push_boxed(curTC, Str);
-                result.push_boxed(curTC, Int);
-                result.push_boxed(curTC, IOType);
-                result.push_boxed(curTC, Str);
-                result.push_boxed(curTC, Int);
+            public void failed(final Throwable exc, final AsyncTaskInstance task) {
+                if (!(exc instanceof AsynchronousCloseException) && !(exc instanceof ClosedChannelException)) {
+                    final ThreadContext  curTC  = tc.gc.getCurrentThreadContext();
+                    final SixModelObject result = Array.st.REPR.allocate(curTC, Array.st);
+                    result.push_boxed(curTC, task.schedulee);
+                    result.push_boxed(curTC, Ops.box_s(exc.toString(), Str, curTC));
+                    result.push_boxed(curTC, IOType);
+                    result.push_boxed(curTC, IOType);
+                    ((ConcBlockingQueueInstance)task.queue).push_boxed(curTC, result);
+                }
             }
         };
 
         try {
-            InetSocketAddress localAddress;
+            final IOHandleInstance binding = (IOHandleInstance)IOType.st.REPR.allocate(tc, IOType.st);
+            binding.handle = this;
 
-            HLLConfig hllConfig = tc.curFrame.codeRef.staticInfo.compUnit.hllConfig;
-            final SixModelObject IOType = hllConfig.ioType;
-            final SixModelObject Array = hllConfig.listType;
-            final SixModelObject Null = hllConfig.nullValue;
-            final SixModelObject Int = hllConfig.intBoxType;
-            final SixModelObject Str = hllConfig.strBoxType;
-
-            try {
-                localAddress = (InetSocketAddress) listenChan.getLocalAddress();
-            } catch (IOException e) {
-                throw ExceptionHandling.dieInternal(tc, e);
-            }
-
-            String socketHost = localAddress.getAddress().getHostAddress();
-            if (socketHost.equals("0:0:0:0:0:0:0:1"))
-                socketHost = "::1";
-            int socketPort = localAddress.getPort();
-
-            ThreadContext curTC = tc.gc.getCurrentThreadContext();
-
-            IOHandleInstance ioHandle = (IOHandleInstance) IOType.st.REPR.allocate(curTC,
-                    IOType.st);
-            ioHandle.handle = this;
-
-            SixModelObject result = Array.st.REPR.allocate(curTC, Array.st);
-
-            result.push_boxed(curTC, task.schedulee);
-            result.push_boxed(curTC, IOType);
-            result.push_boxed(curTC, Null);
-            result.push_boxed(curTC, Str);
-            result.push_boxed(curTC, Int);
-            result.push_boxed(curTC, ioHandle);
-            result.push_boxed(curTC, Ops.box_s(socketHost, Str, curTC));
-            result.push_boxed(curTC, Ops.box_i(socketPort, Int, curTC));
-
-            ((ConcBlockingQueueInstance) task.queue).push_boxed(curTC, result);
+            final SixModelObject result = Array.st.REPR.allocate(tc, Array.st);
+            result.push_boxed(tc, task.schedulee);
+            result.push_boxed(tc, Str);
+            result.push_boxed(tc, binding);
+            result.push_boxed(tc, IOType);
+            ((ConcBlockingQueueInstance)task.queue).push_boxed(tc, result);
         }
         catch (Exception e) {
             throw ExceptionHandling.dieInternal(tc, e);
