@@ -3211,25 +3211,26 @@ changed if provided by the underlying watcher mechanism, a 0 if the file
 changed, and a 1 if it was renamed. Cancel to stop watching.
 
 ## asyncconnect
-* `asyncconnect($queue, $schedulee, str $host, int $port, $handle_type)`
+* `asyncconnect($queue, $schedulee, Address $address, int $family, $cancellation-type --> Handle)`
 
 Creates an asynchronous client socket and commences a connection operation.
 Upon connection, the queue will be passed an array consisting of the
-schedulee, a handle if the connection was successful (a type object if not)
-and an error string (some type object if no error). Returns an AsyncTask
+schedulee, an error string (a Str type object if no error), and a handle if the
+connection was successful (a Handle type object if not). Returns an AsyncTask
 representing the connection attempt.
 
 ## asynclisten
-* `asynclisten($queue, $schedulee, str $host, int $port, $handle_type)`
+* `asynclisten($queue, $schedulee, Address $address, int $family, int $backlog, $cancellation-type --> Handle)`
 
-Creates an asynchronous server socket listening on the specified host and port.
-Each time a connection arrives, the queue will be passed an array consisting of
-the schedulee and the newly created asynchronous socket, for communicating with
-the connecting client. Returns an AsyncTask that can be cancelled to stop
-listening, or throws an exception if there is an error starting to listen.
+Creates an asynchronous server socket listening on the specified address.  Each
+time a connection arrives, the queue will be passed an array consisting of the
+schedulee, a Str type object, a Handle type object, and the newly created
+asynchronous socket, for communicating with the connecting client. Returns an
+AsyncTask that can be cancelled to stop listening, or throws an exception if
+there is an error starting to listen.
 
 ## asyncwritebytes
-* `asyncwritebytes($handle, $queue, $schedulee, $to_write, $handle_type)`
+* `asyncwritebytes($handle, $queue, $schedulee, $to-write, $cancellation-type)`
 
 Writes a byte array to some handle capable of asynchronous operations. Once
 the write is complete, the queue will be passed an array consisting of the
@@ -3238,14 +3239,14 @@ object if there was an error, and a string containing an error or some type
 object if none.
 
 ## asyncreadbytes `moar` `jvm`
-* `asyncreadbytes($handle, $queue, $schedulee, $buf_type, $handle_type)`
+* `asyncreadbytes($handle, $queue, $schedulee, $buf-type, $cancellation-type)`
 
-Starts reading bytes from the handle. When a packet is received, a $buf_type
-will be constructed and point to the received memory. An array will be
-pushed to the queue containing the schedulee, a sequence number that starts
-at 0, the buffer or just its type object on error, and an error string (type
-object if no error). If EOF is reached, a sequence number of -1 is sent.
-Cancel to stop reading.
+Starts reading bytes from the handle. When a packet is received, a $buf-type
+will be constructed and point to the received memory. An array will be pushed
+to the queue containing the schedulee, an error string (type object if no
+error), the buffer (or its type object on error), and a sequence number that
+starts at 0. If EOF is reached, a sequence number of -1 is sent. Cancel to
+stop reading.
 
 ## spawnprocasync
 * `spawnprocasync($queue, $args, $cwd, %env, $callbacks)`
