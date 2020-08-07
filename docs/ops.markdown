@@ -231,7 +231,6 @@ For generating an abstract tree that includes opcodes, see [docs/qast.markdown](
   * [addrtobuf](#addrtobuf)
   * [dnsresolve](#dnsresolve)
   * [gethostname](#gethostname)
-  * [getport](#getport-moar-jvm)
   * [getsockname](#getsockname)
   * [getpeername](#getpeername)
   * [link](#link)
@@ -1986,12 +1985,6 @@ selected should `$hostname` be null.
 * `gethostname(str $str --> str)`
 
 Returns the hostname of the system where it is run.
-
-## getport `moar` `jvm`
-* `getport($obj --> int)`
-
-If the specified object is an IO::Handle, return the integer port
-number the object is listening on. If an error occurs, return -1.
 
 ## getsockname
 * `getsockname(Handle $socket --> VMArray [Int $family, Address $address])`
