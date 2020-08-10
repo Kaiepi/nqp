@@ -1,1 +1,1 @@
-@java -cp . -Xbootclasspath/a:.;nqp-runtime.jar;3rdparty/asm/asm-4.1.jar;3rdparty/jline/jline-1.0.jar;3rdparty/jna/jna-4.0.0.jar;nqp.jar nqp %*
+@java -cp . -Xbootclasspath/a:.;nqp-runtime.jar;3rdparty/asm/asm-4.1.jar;3rdparty/jline/jline-1.0.jar;3rdparty/jna/jna-4.0.0.jar;3rdparty/dnsjava/dnsjava-3.2.2.jar;3rdparty/slf4j/slf4j-api-1.7.30.jar;3rdparty/slf4j/slf4j-simple-1.7.30.jar;nqp.jar nqp %*

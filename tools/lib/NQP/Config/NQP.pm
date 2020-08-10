@@ -248,6 +248,9 @@ sub configure_jars {
             'asm-tree' => [qw<3rdparty asm asm-tree-4.1.jar>],
             jline => [qw<3rdparty jline jline-1.0.jar>],
             jna => [qw<3rdparty jna jna-4.0.0.jar>],
+            dnsjava => [qw<3rdparty dnsjava dnsjava-3.2.2.jar>],
+            'slf4j-api' => [qw<3rdparty slf4j slf4j-api-1.7.30.jar>],
+            'slf4j-simple' => [qw<3rdparty slf4j slf4j-simple-1.7.30.jar>],
         }
     );
 }

@@ -47,15 +47,17 @@ MAIN: {
         'with-moar=s',      'gen-moar:s',
         'moar-option=s@',   'with-asm=s',
         'with-asm-tree=s',  'with-jline=s',
-        'with-jna=s',       'make-install!',
-        'makefile-timing!', 'git-protocol=s',
-        'ignore-errors!',   'link',
-        'git-depth=s',      'git-cache-dir=s',
-        'github-user=s',    'nqp-repo=s',
-        'moar-repo=s',      'expand=s',
-        'out=s',            'set-var=s@',
-        'relocatable!',     'silent-build!',
-        'force-rebuild!',   'git-reference=s'
+        'with-jna=s',       'with-dnsjava=s',
+        'with-slf4j-api=s', 'with-slf4j-simple=s',
+        'make-install!',    'makefile-timing!',
+        'git-protocol=s',   'ignore-errors!',
+        'link',             'git-depth=s',
+        'git-cache-dir=s',  'github-user=s',
+        'nqp-repo=s',       'moar-repo=s',
+        'expand=s',         'out=s',
+        'set-var=s@',       'relocatable!',
+        'silent-build!',    'force-rebuild!',
+        'git-reference=s'
       )
       or do {
         print_help();
@@ -149,6 +151,9 @@ General Options:
     --with-asm-tree='/path/to/jar'
     --with-jline='/path/to/jar'
     --with-jna='/path/to/jar'
+    --with-dnsjava='/path/to/jar'
+    --with-slf4j-api='/path/to/jar'
+    --with-slf4j-simple='/path/to/jar'
                        Provide paths to already installed jars
     --github-user=<user>
                        Fetch all repositories (rakudo, nqp, roast, MoarVM) from

@@ -8,6 +8,16 @@ use File::Spec;
 
 my ($destdir, $prefix) = @ARGV;
 my $realpath = $destdir.$prefix;
+my @jars = (
+    "$jar_dir/nqp-runtime.jar",
+    "$jar_dir/@asmfile@",
+    "$jar_dir/@jlinefile@",
+    "$jar_dir/@jnafile@",
+    "$jar_dir/@dnsjavafile@",
+    "$jar_dir/@slf4japifile@",
+    "$jar_dir/@slf4jsimplefile@",
+    "$lib_dir/nqp.jar"
+);
 
 unless (File::Spec->file_name_is_absolute($prefix)) {
     $prefix = File::Spec->rel2abs($prefix);
@@ -17,11 +27,11 @@ if ($^O eq 'MSWin32') {
     my $jar_dir = File::Spec->catfile($prefix, 'share', 'nqp', 'runtime');
     my $lib_dir = File::Spec->catfile($prefix, 'share', 'nqp', 'lib');
     my $install_to = File::Spec->catfile($realpath, 'bin', 'nqp-j.bat');
+    my $jars = join ';', @jars;
 
     open my $fh, ">", $install_to
         or die "Could not open $install_to: $!";
-    print $fh '@java -Xss1m -Xmx1324m -Xbootclasspath/a:' . $jar_dir . '\\nqp-runtime.jar;' .
-              "$jar_dir\\@asmfile@;$jar_dir\\@jlinefile@;$jar_dir\\@jnafile@;$lib_dir\\nqp.jar -cp $lib_dir nqp %*\n";
+    print $fh '@java -Xss1m -Xmx1324m -Xbootclasspath/a:' . $jar_dir . '\\nqp-runtime.jar;' . $jars . " -cp $lib_dir nqp %*\n";
     close $fh
         or die "Could not close $install_to: $!";
 }
@@ -29,7 +39,7 @@ else {
     my $nqp_dir = File::Spec->catfile($prefix, qw/share nqp/);
     my $jar_dir = File::Spec->catfile('${NQP_DIR}', 'runtime');
     my $lib_dir = File::Spec->catfile('${NQP_DIR}', 'lib');
-    my $jars = "$jar_dir/nqp-runtime.jar:$jar_dir/@asmfile@:$jar_dir/@jlinefile@:$jar_dir/@jnafile@:$lib_dir/nqp.jar";
+    my $jars = join ':', @jars;
     my $install_to = File::Spec->catfile($realpath, 'bin', 'nqp-j');
 
     open my $fh, ">", $install_to
