@@ -2321,7 +2321,8 @@ QAST::MASTOperations.add_core_moarop_mapping('addrfrombuf_un', 'addrfrombuf_un')
 QAST::MASTOperations.add_core_moarop_mapping('addrtobuf', 'addrtobuf');
 
 QAST::MASTOperations.add_core_moarop_mapping('dnsresolve', 'dnsresolve');
-QAST::MASTOperations.add_core_moarop_mapping('dnsresolver', 'dnsresolver');
+QAST::MASTOperations.add_core_moarop_mapping('dnsconfigure', 'dnsconfigure');
+QAST::MASTOperations.add_core_moarop_mapping('asyncdnsquery', 'asyncdnsquery');
 
 QAST::MASTOperations.add_core_moarop_mapping('socket', 'socket');
 QAST::MASTOperations.add_core_moarop_mapping('connect', 'connect_sk', 0);
