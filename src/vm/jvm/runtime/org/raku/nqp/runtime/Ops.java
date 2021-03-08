@@ -65,6 +65,7 @@ import org.raku.nqp.io.IIOSyncWritable;
 import org.raku.nqp.io.IIOPossiblyTTY;
 import org.raku.nqp.io.SyncProcessHandle;
 import org.raku.nqp.io.ProcessChannel;
+import org.raku.nqp.io.ProtocolFamily;
 import org.raku.nqp.io.ServerSocketHandle;
 import org.raku.nqp.io.SocketHandle;
 import org.raku.nqp.io.StandardReadHandle;
@@ -421,18 +422,13 @@ public final class Ops {
         return h;
     }
 
-	public static final int SOCKET_FAMILY_UNSPEC = 0;
-	public static final int SOCKET_FAMILY_INET   = 1;
-	public static final int SOCKET_FAMILY_INET6  = 2;
-	public static final int SOCKET_FAMILY_UNIX   = 3;
-
     public static SixModelObject connect(SixModelObject obj, String host, long port, long family, ThreadContext tc) {
         IOHandleInstance h = (IOHandleInstance)obj;
 
 		switch ((int) family) {
-			case SOCKET_FAMILY_UNSPEC:
-			case SOCKET_FAMILY_INET:
-			case SOCKET_FAMILY_INET6:
+			case ProtocolFamily.UNSPEC:
+			case ProtocolFamily.INET:
+			case ProtocolFamily.INET6:
 				if (h.handle instanceof SocketHandle) {
 					((SocketHandle)h.handle).connect(tc, host, (int) port);
 				} else {
@@ -440,7 +436,7 @@ public final class Ops {
 						"This handle does not support connect");
 				}
 				break;
-			case SOCKET_FAMILY_UNIX:
+			case ProtocolFamily.UNIX:
 				ExceptionHandling.dieInternal(tc,
 					"UNIX sockets are not supported on the JVM");
 				break;
@@ -457,9 +453,9 @@ public final class Ops {
         IOHandleInstance h = (IOHandleInstance)obj;
 
 		switch ((int) family) {
-			case SOCKET_FAMILY_UNSPEC:
-			case SOCKET_FAMILY_INET:
-			case SOCKET_FAMILY_INET6:
+			case ProtocolFamily.UNSPEC:
+			case ProtocolFamily.INET:
+			case ProtocolFamily.INET6:
 				if (h.handle instanceof IIOBindable) {
 					((IIOBindable)h.handle).bind(tc, host, (int) port, (int) backlog);
 				} else {
@@ -467,7 +463,7 @@ public final class Ops {
 						"This handle does not support bind");
 				}
 				break;
-			case SOCKET_FAMILY_UNIX:
+			case ProtocolFamily.UNIX:
 				ExceptionHandling.dieInternal(tc,
 					"UNIX sockets are not supported on the JVM");
 				break;
