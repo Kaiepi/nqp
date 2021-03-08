@@ -99,6 +99,11 @@ public class GlobalContext {
     public SixModelObject BOOTException;
 
     /**
+     * BOOTAddress type; a basice, method-less type with the Address REPR.
+     */
+    public SixModelObject BOOTAddress;
+
+    /**
      * BOOTIO type; a basic, method-less type with the IOHandle REPR.
      */
     public SixModelObject BOOTIO;

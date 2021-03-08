@@ -3,6 +3,7 @@ package org.raku.nqp.sixmodel;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.raku.nqp.sixmodel.reprs.Address;
 import org.raku.nqp.sixmodel.reprs.CallCapture;
 import org.raku.nqp.sixmodel.reprs.CodeRefREPR;
 import org.raku.nqp.sixmodel.reprs.ContextRef;
@@ -106,5 +107,6 @@ public class REPRRegistry {
         addREPR("NativeRef", new NativeRef());
         addREPR("MultiDimArray", new MultiDimArray());
         addREPR("Decoder", new Decoder());
+        addREPR("Address", new Address());
     }
 }
