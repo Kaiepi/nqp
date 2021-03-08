@@ -2296,6 +2296,7 @@ QAST::MASTOperations.add_core_moarop_mapping('eoffh', 'eof_fh');
 QAST::MASTOperations.add_core_moarop_mapping('closefh', 'close_fh', 0);
 QAST::MASTOperations.add_core_moarop_mapping('isttyfh', 'istty_fh');
 QAST::MASTOperations.add_core_moarop_mapping('filenofh', 'fileno_fh');
+QAST::MASTOperations.add_core_moarop_mapping('addrfromstr_ip4', 'addrfromstr_ip4');
 QAST::MASTOperations.add_core_moarop_mapping('socket', 'socket');
 QAST::MASTOperations.add_core_moarop_mapping('connect', 'connect_sk', 0);
 QAST::MASTOperations.add_core_moarop_mapping('bindsock', 'bind_sk', 0);
