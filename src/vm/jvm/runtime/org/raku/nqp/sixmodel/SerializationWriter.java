@@ -205,6 +205,13 @@ public class SerializationWriter {
         outputs[currentBuffer].putInt(heapLoc);
     }
 
+    /* Writing function for native buffers. */
+    public void writeBytes(byte[] value) {
+        this.growToHold(currentBuffer, 4 + value.length);
+        outputs[currentBuffer].putInt(value.length);
+        outputs[currentBuffer].put(value);
+    }
+
     /* Writes an object reference. */
     public void writeObjRef(SixModelObject ref) {
         if (ref.sc == null) {
