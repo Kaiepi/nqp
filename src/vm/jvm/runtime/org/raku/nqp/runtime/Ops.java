@@ -63,6 +63,7 @@ import org.raku.nqp.io.IIOSeekable;
 import org.raku.nqp.io.IIOSyncReadable;
 import org.raku.nqp.io.IIOSyncWritable;
 import org.raku.nqp.io.IIOPossiblyTTY;
+import org.raku.nqp.io.IPv4AddressStorage;
 import org.raku.nqp.io.SyncProcessHandle;
 import org.raku.nqp.io.ProcessChannel;
 import org.raku.nqp.io.ProtocolFamily;
@@ -86,6 +87,7 @@ import org.raku.nqp.sixmodel.SerializationWriter;
 import org.raku.nqp.sixmodel.SixModelObject;
 import org.raku.nqp.sixmodel.StorageSpec;
 import org.raku.nqp.sixmodel.TypeObject;
+import org.raku.nqp.sixmodel.reprs.AddressInstance;
 import org.raku.nqp.sixmodel.reprs.AsyncTaskInstance;
 import org.raku.nqp.sixmodel.reprs.CallCaptureInstance;
 import org.raku.nqp.sixmodel.reprs.ConcBlockingQueueInstance;
@@ -406,6 +408,17 @@ public final class Ops {
         IOHandleInstance h = (IOHandleInstance)IOType.st.REPR.allocate(tc, IOType.st);
         h.handle = new FileHandle(tc, path, mode);
         return h;
+    }
+
+    public static SixModelObject addrfromstr_ip4(final String presentation, final long port, final ThreadContext tc) {
+        final SixModelObject  BOOTAddress = tc.gc.BOOTAddress;
+        final AddressInstance address     = (AddressInstance)BOOTAddress.st.REPR.allocate(tc, BOOTAddress.st);
+        try {
+            address.storage = IPv4AddressStorage.fromPresentation(presentation, (int)port);
+        } catch (final Exception e) {
+            throw ExceptionHandling.dieInternal(tc, "Error creating IPv4 address: " + e.getMessage());
+        }
+        return address;
     }
 
     public static SixModelObject socket(long listener, ThreadContext tc) {

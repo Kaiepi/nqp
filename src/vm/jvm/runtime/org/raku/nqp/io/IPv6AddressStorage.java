@@ -3,7 +3,11 @@ package org.raku.nqp.io;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import inet.ipaddr.AddressStringException;
 import inet.ipaddr.AddressValueException;
+import inet.ipaddr.IPAddress;
+import inet.ipaddr.IPAddressString;
+import inet.ipaddr.IPAddressStringParameters;
 import inet.ipaddr.ipv6.IPv6Address;
 import static inet.ipaddr.ipv6.IPv6Address.IPv6Zone;
 
