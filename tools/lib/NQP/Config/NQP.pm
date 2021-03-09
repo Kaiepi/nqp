@@ -248,6 +248,7 @@ sub configure_jars {
             'asm-tree' => [qw<3rdparty asm asm-tree-4.1.jar>],
             jline => [qw<3rdparty jline jline-1.0.jar>],
             jna => [qw<3rdparty jna jna-4.0.0.jar>],
+            ipaddress => [qw<3rdparty ipaddress ipaddress-5.3.3.jar>],
         }
     );
 }
