@@ -64,6 +64,7 @@ import org.raku.nqp.io.IIOSyncReadable;
 import org.raku.nqp.io.IIOSyncWritable;
 import org.raku.nqp.io.IIOPossiblyTTY;
 import org.raku.nqp.io.IPv4AddressStorage;
+import org.raku.nqp.io.IPv6AddressStorage;
 import org.raku.nqp.io.SyncProcessHandle;
 import org.raku.nqp.io.ProcessChannel;
 import org.raku.nqp.io.ProtocolFamily;
@@ -417,6 +418,22 @@ public final class Ops {
             address.storage = IPv4AddressStorage.fromPresentation(presentation, (int)port);
         } catch (final Exception e) {
             throw ExceptionHandling.dieInternal(tc, "Error creating IPv4 address: " + e.getMessage());
+        }
+        return address;
+    }
+
+    public static SixModelObject addrfromstr_ip6(
+        final String        presentation,
+        final long          port,
+        final String        zoneId,
+        final ThreadContext tc
+    ) {
+        final SixModelObject  BOOTAddress = tc.gc.BOOTAddress;
+        final AddressInstance address     = (AddressInstance)BOOTAddress.st.REPR.allocate(tc, BOOTAddress.st);
+        try {
+            address.storage = IPv6AddressStorage.fromPresentation(presentation, (int)port, zoneId);
+        } catch (final Exception e) {
+            throw ExceptionHandling.dieInternal(tc, "Error creating IPv6 address: " + e.getMessage());
         }
         return address;
     }
