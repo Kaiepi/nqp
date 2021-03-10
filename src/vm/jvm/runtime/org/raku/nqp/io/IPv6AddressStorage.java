@@ -29,7 +29,8 @@ public final class IPv6AddressStorage extends IPAddressStorage<IPv6Address> {
      * Gets the scope ID associated with the IPv6 socket address.
      */
     public int getScopeId() {
-        return ipAddress.getIPv6Zone().getAssociatedScopeId();
+        final IPv6Zone zone = ipAddress.getIPv6Zone();
+        return zone == null ? 0 : zone.getAssociatedScopeId();
     }
 
     static final IPAddressStringParameters PF_INET6;

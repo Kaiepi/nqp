@@ -457,6 +457,19 @@ public final class Ops {
             return (long)((IPAddressStorage)storage).getPort();
     }
 
+    public static long getaddrscopeid(final SixModelObject address, final ThreadContext tc) {
+        if (!(address instanceof AddressInstance))
+            throw ExceptionHandling.dieInternal(tc,
+                "getaddrscopeid requires a concrete object of REPR Address, " +
+                "got " + address.st.REPR.name + " (" + address.st.debugName + ")");
+
+        final AddressStorage<?> storage = ((AddressInstance)address).storage;
+        if (!(storage instanceof IPv6AddressStorage))
+            throw ExceptionHandling.dieInternal(tc, "Can only get the scope ID of an IPv6 address");
+        else
+            return (long)((IPv6AddressStorage)storage).getScopeId();
+    }
+
     public static SixModelObject socket(long listener, ThreadContext tc) {
         SixModelObject IOType = tc.curFrame.codeRef.staticInfo.compUnit.hllConfig.ioType;
         IOHandleInstance h = (IOHandleInstance)IOType.st.REPR.allocate(tc, IOType.st);
