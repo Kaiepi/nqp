@@ -54,6 +54,7 @@ import java.util.TimerTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.raku.nqp.io.AddressStorage;
 import org.raku.nqp.io.FileHandle;
 import org.raku.nqp.io.IIOBindable;
 import org.raku.nqp.io.IIOCancelable;
@@ -63,6 +64,7 @@ import org.raku.nqp.io.IIOSeekable;
 import org.raku.nqp.io.IIOSyncReadable;
 import org.raku.nqp.io.IIOSyncWritable;
 import org.raku.nqp.io.IIOPossiblyTTY;
+import org.raku.nqp.io.IPAddressStorage;
 import org.raku.nqp.io.IPv4AddressStorage;
 import org.raku.nqp.io.IPv6AddressStorage;
 import org.raku.nqp.io.SyncProcessHandle;
@@ -440,6 +442,19 @@ public final class Ops {
 
     public static SixModelObject addrfromstr_un(final String path, final ThreadContext tc) {
         throw ExceptionHandling.dieInternal(tc, "JVM UNIX socket support NYI");
+    }
+
+    public static long getaddrport(final SixModelObject address, final ThreadContext tc) {
+        if (!(address instanceof AddressInstance))
+            throw ExceptionHandling.dieInternal(tc,
+                "getaddrport requires a concrete object of REPR Address, " +
+                "got " + address.st.REPR.name + " (" + address.st.debugName + ")");
+
+        final AddressStorage<?> storage = ((AddressInstance)address).storage;
+        if (!(storage instanceof IPAddressStorage))
+            throw ExceptionHandling.dieInternal(tc, "Can only get the port of an IP address");
+        else
+            return (long)((IPAddressStorage)storage).getPort();
     }
 
     public static SixModelObject socket(long listener, ThreadContext tc) {
