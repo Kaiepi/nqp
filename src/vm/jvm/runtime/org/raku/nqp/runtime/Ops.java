@@ -438,6 +438,10 @@ public final class Ops {
         return address;
     }
 
+    public static SixModelObject addrfromstr_un(final String path, final ThreadContext tc) {
+        throw ExceptionHandling.dieInternal(tc, "JVM UNIX socket support NYI");
+    }
+
     public static SixModelObject socket(long listener, ThreadContext tc) {
         SixModelObject IOType = tc.curFrame.codeRef.staticInfo.compUnit.hllConfig.ioType;
         IOHandleInstance h = (IOHandleInstance)IOType.st.REPR.allocate(tc, IOType.st);
