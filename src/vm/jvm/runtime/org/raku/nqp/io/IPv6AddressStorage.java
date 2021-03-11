@@ -33,6 +33,14 @@ public final class IPv6AddressStorage extends IPAddressStorage<IPv6Address> {
         return zone == null ? 0 : zone.getAssociatedScopeId();
     }
 
+    @Override
+    public String toString() {
+        final String literal = super.toString();
+        return ipAddress.getIPv6Zone() == null ?
+               literal :
+               literal.substring(0, literal.indexOf("%"));
+    }
+
     static final IPAddressStringParameters PF_INET6;
     static final IPAddressStringParameters PF_INET6_ZONE;
     static {

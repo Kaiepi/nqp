@@ -25,4 +25,9 @@ public abstract class IPAddressStorage<T extends IPAddress> extends AddressStora
     public final int getPort() {
         return address.getPort();
     }
+
+    @Override
+    public String toString() {
+        return ipAddress.toCanonicalString();
+    }
 }

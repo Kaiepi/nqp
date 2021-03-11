@@ -28,4 +28,7 @@ public abstract class AddressStorage<T extends SocketAddress> {
      * Gets a binary representation of the stored socket address.
      */
     abstract public byte[] getBytes();
+
+    @Override
+    abstract public String toString();
 }

@@ -470,6 +470,14 @@ public final class Ops {
             return (long)((IPv6AddressStorage)storage).getScopeId();
     }
 
+    public static String addrtostr(final SixModelObject address, final ThreadContext tc) {
+        if (!(address instanceof AddressInstance))
+            throw ExceptionHandling.dieInternal(tc,
+                "addrtostr requires a concrete object of REPR Address, " +
+                "got " + address.st.REPR.name + " (" + address.st.debugName + ")");
+        return ((AddressInstance)address).storage.toString();
+    }
+
     public static SixModelObject socket(long listener, ThreadContext tc) {
         SixModelObject IOType = tc.curFrame.codeRef.staticInfo.compUnit.hllConfig.ioType;
         IOHandleInstance h = (IOHandleInstance)IOType.st.REPR.allocate(tc, IOType.st);
