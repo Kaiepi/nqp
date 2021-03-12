@@ -478,6 +478,52 @@ public final class Ops {
         return ((AddressInstance)address).storage.toString();
     }
 
+    public static SixModelObject addrfrombuf_ip4(
+        final SixModelObject obj,
+        final long           port,
+        final ThreadContext  tc
+    ) {
+        if (!(obj.st.REPR instanceof VMArray))
+            throw ExceptionHandling.dieInternal(tc,
+                "addrfrombuf_ip4 requires a concrete object of REPR VMArray, " +
+                "got " + obj.st.REPR.name + " (" + obj.st.debugName + ")");
+
+        final ByteBuffer bb = ByteBuffer.allocate(4);
+        if (obj instanceof VMArrayInstance_u8) {
+            final VMArrayInstance_u8 buf = (VMArrayInstance_u8)obj;
+            if (buf.elems == 4) {
+                bb.put(buf.slots, 0, buf.elems);
+            } else {
+                throw ExceptionHandling.dieInternal(tc, "IPv4 address uint8 buffer must have 4 elements");
+            }
+        } else if (obj instanceof VMArrayInstance_u16) {
+            final VMArrayInstance_u16 buf = (VMArrayInstance_u16)obj;
+            if (buf.elems == 2) {
+                bb.asShortBuffer().put(buf.slots, 0, buf.elems);
+            } else {
+                throw ExceptionHandling.dieInternal(tc, "IPv4 address uint16 buffer must have 2 elements");
+            }
+        } else if (obj instanceof VMArrayInstance_u32) {
+            final VMArrayInstance_u32 buf = (VMArrayInstance_u32)obj;
+            if (buf.elems == 1) {
+                bb.asIntBuffer().put(buf.slots, 0, buf.elems);
+            } else {
+                throw ExceptionHandling.dieInternal(tc, "IPv4 address uint32 buffer must have 1 element");
+            }
+        } else {
+            throw ExceptionHandling.dieInternal(tc, "IPv4 address buffer must be an array of uint8, uint16, or uint32");
+        }
+
+        final SixModelObject  BOOTAddress = tc.gc.BOOTAddress;
+        final AddressInstance address     = (AddressInstance)BOOTAddress.st.REPR.allocate(tc, BOOTAddress.st);
+        try {
+            address.storage = IPv4AddressStorage.fromBytes(bb.array(), (int)port);
+        } catch (final Exception e) {
+            throw ExceptionHandling.dieInternal(tc, "Error creating IPv4 address: " + e.getMessage());
+        }
+        return address;
+    }
+
     public static SixModelObject socket(long listener, ThreadContext tc) {
         SixModelObject IOType = tc.curFrame.codeRef.staticInfo.compUnit.hllConfig.ioType;
         IOHandleInstance h = (IOHandleInstance)IOType.st.REPR.allocate(tc, IOType.st);
