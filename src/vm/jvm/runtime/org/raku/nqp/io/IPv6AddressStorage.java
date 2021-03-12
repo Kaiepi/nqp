@@ -65,6 +65,21 @@ public final class IPv6AddressStorage extends IPAddressStorage<IPv6Address> {
         return new IPv6AddressStorage(ipAddress, port);
     }
 
+    public static IPv6AddressStorage fromBytes(
+        final byte[] networkAddress,
+        final int    port,
+        final String zoneId
+    ) throws AddressValueException {
+        final IPv6Address ipAddress;
+        if (zoneId == null)
+            ipAddress = new IPv6Address(networkAddress);
+        else {
+            final IPv6Zone zone = new IPv6Zone(zoneId);
+            ipAddress = new IPv6Address(networkAddress, zone);
+        }
+        return new IPv6AddressStorage(ipAddress, port);
+    }
+
     /**
      * Stores a new IPv6 socket address created from a presentation-format string.
      */
@@ -73,7 +88,7 @@ public final class IPv6AddressStorage extends IPAddressStorage<IPv6Address> {
         final int    port,
         final String zoneId
     ) throws AddressStringException {
-        final IPAddressString ipLiteral = (zoneId == null)
+        final IPAddressString ipLiteral = zoneId == null
                                         ? new IPAddressString(presentation, PF_INET6)
                                         : new IPAddressString(presentation + "%" + zoneId, PF_INET6_ZONE);
         final IPAddress       ipAddress = ipLiteral.toAddress();

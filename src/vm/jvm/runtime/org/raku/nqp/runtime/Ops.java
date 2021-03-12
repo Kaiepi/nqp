@@ -129,6 +129,7 @@ import org.raku.nqp.sixmodel.reprs.VMArrayInstance_i8;
 import org.raku.nqp.sixmodel.reprs.VMArrayInstance_u16;
 import org.raku.nqp.sixmodel.reprs.VMArrayInstance_u32;
 import org.raku.nqp.sixmodel.reprs.VMArrayInstance_u8;
+import org.raku.nqp.sixmodel.reprs.VMArrayREPRData;
 import org.raku.nqp.sixmodel.reprs.VMExceptionInstance;
 import org.raku.nqp.sixmodel.reprs.VMHash;
 import org.raku.nqp.sixmodel.reprs.VMHashInstance;
@@ -520,6 +521,60 @@ public final class Ops {
             address.storage = IPv4AddressStorage.fromBytes(bb.array(), (int)port);
         } catch (final Exception e) {
             throw ExceptionHandling.dieInternal(tc, "Error creating IPv4 address: " + e.getMessage());
+        }
+        return address;
+    }
+
+    public static SixModelObject addrfrombuf_ip6(
+        final SixModelObject obj,
+        final long           port,
+        final String         zone_id,
+        final ThreadContext  tc
+    ) {
+        if (!(obj.st.REPR instanceof VMArray))
+            throw ExceptionHandling.dieInternal(tc,
+                "addrfrombuf_ip6 requires a concrete object of REPR VMArray, " +
+                "got " + obj.st.REPR.name + " (" + obj.st.debugName + ")");
+
+        final ByteBuffer bb = ByteBuffer.allocate(16);
+        if (obj instanceof VMArrayInstance_u8) {
+            final VMArrayInstance_u8 buf = (VMArrayInstance_u8)obj;
+            if (buf.elems == 16) {
+                bb.put(buf.slots, 0, buf.elems);
+            } else {
+                throw ExceptionHandling.dieInternal(tc, "IPv6 address uint8 buffer must have 16 elements");
+            }
+        } else if (obj instanceof VMArrayInstance_u16) {
+            final VMArrayInstance_u16 buf = (VMArrayInstance_u16)obj;
+            if (buf.elems == 8) {
+                bb.asShortBuffer().put(buf.slots, 0, buf.elems);
+            } else {
+                throw ExceptionHandling.dieInternal(tc, "IPv6 address uint16 buffer must have 8 elements");
+            }
+        } else if (obj instanceof VMArrayInstance_u32) {
+            final VMArrayInstance_u32 buf = (VMArrayInstance_u32)obj;
+            if (buf.elems == 4) {
+                bb.asIntBuffer().put(buf.slots, 0, buf.elems);
+            } else {
+                throw ExceptionHandling.dieInternal(tc, "IPv6 address uint32 buffer must have 4 elements");
+            }
+        } else if (obj instanceof VMArrayInstance_i && ((VMArrayREPRData)obj.st.REPRData).ss.is_unsigned != 0) {
+            final VMArrayInstance_i buf = (VMArrayInstance_i)obj;
+            if (buf.elems == 2) {
+                bb.asLongBuffer().put(buf.slots, 0, buf.elems);
+            } else {
+                throw ExceptionHandling.dieInternal(tc, "IPv6 address uint644 buffer must have 2 elements");
+            }
+        } else {
+            throw ExceptionHandling.dieInternal(tc, "IPv6 address buffer must be an array of uint8, uint16, uint32, or uint64");
+        }
+
+        final SixModelObject  BOOTAddress = tc.gc.BOOTAddress;
+        final AddressInstance address     = (AddressInstance)BOOTAddress.st.REPR.allocate(tc, BOOTAddress.st);
+        try {
+            address.storage = IPv6AddressStorage.fromBytes(bb.array(), (int)port, zone_id);
+        } catch (final Exception e) {
+            throw ExceptionHandling.dieInternal(tc, "Error creating IPv6 address: " + e.getMessage());
         }
         return address;
     }
