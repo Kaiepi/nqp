@@ -2302,6 +2302,7 @@ QAST::MASTOperations.add_core_moarop_mapping('addrfromstr_un', 'addrfromstr_un')
 QAST::MASTOperations.add_core_moarop_mapping('getaddrport', 'getaddrport');
 QAST::MASTOperations.add_core_moarop_mapping('getaddrscopeid', 'getaddrscopeid');
 QAST::MASTOperations.add_core_moarop_mapping('addrtostr', 'addrtostr');
+QAST::MASTOperations.add_core_moarop_mapping('addrfrombuf_ip4', 'addrfrombuf_ip4');
 QAST::MASTOperations.add_core_moarop_mapping('socket', 'socket');
 QAST::MASTOperations.add_core_moarop_mapping('connect', 'connect_sk', 0);
 QAST::MASTOperations.add_core_moarop_mapping('bindsock', 'bind_sk', 0);
