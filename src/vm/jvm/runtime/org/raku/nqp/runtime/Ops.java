@@ -583,6 +583,90 @@ public final class Ops {
         throw ExceptionHandling.dieInternal(tc, "JVM UNIX socket support NYI");
     }
 
+    public static SixModelObject addrtobuf(
+        final SixModelObject obj,
+        final SixModelObject bufType,
+        final ThreadContext  tc
+    ) {
+        if (!(obj instanceof AddressInstance))
+            throw ExceptionHandling.dieInternal(tc,
+                "addrtobuf requires a concrete object of REPR Address, " +
+                "got " + obj.st.REPR.name + " (" + obj.st.debugName + ")");
+        if (!(bufType.st.REPR instanceof VMArray))
+            throw ExceptionHandling.dieInternal(tc,
+                "addrtobuf requires an object of REPR VMArray, " +
+                "got " + bufType.st.REPR.name + " (" + bufType.st.debugName + ")");
+
+        final AddressInstance address = (AddressInstance)obj;
+        final int             family  = address.storage.getFamily();
+        switch (family) {
+            case ProtocolFamily.INET: {
+                final SixModelObject bufObj = bufType.st.REPR.allocate(tc, bufType.st);
+                final ByteBuffer     bb     = ByteBuffer.allocate(4);
+                bb.put(address.storage.getBytes());
+                bb.rewind();
+                if (bufObj instanceof VMArrayInstance_u8) {
+                    final VMArrayInstance_u8 buf = (VMArrayInstance_u8)bufObj;
+                    buf.elems = 4;
+                    buf.slots = new byte[4];
+                    bb.get(buf.slots);
+                    return buf;
+                } else if (bufObj instanceof VMArrayInstance_u16) {
+                    final VMArrayInstance_u16 buf = (VMArrayInstance_u16)bufObj;
+                    buf.elems = 2;
+                    buf.slots = new short[2];
+                    bb.asShortBuffer().get(buf.slots);
+                    return buf;
+                } else if (bufObj instanceof VMArrayInstance_u32) {
+                    final VMArrayInstance_u32 buf = (VMArrayInstance_u32)bufObj;
+                    buf.elems = 1;
+                    buf.slots = new int[1];
+                    bb.asIntBuffer().get(buf.slots);
+                    return buf;
+                } else {
+                    throw ExceptionHandling.dieInternal(tc,
+                        "IPv4 address buffer type must be an array of uint8, uint16, or uint32");
+                }
+            }
+            case ProtocolFamily.INET6: {
+                final SixModelObject bufObj = bufType.st.REPR.allocate(tc, bufType.st);
+                final ByteBuffer     bb     = ByteBuffer.allocate(16);
+                bb.put(address.storage.getBytes());
+                bb.rewind();
+                if (bufObj instanceof VMArrayInstance_u8) {
+                    final VMArrayInstance_u8 buf = (VMArrayInstance_u8)bufObj;
+                    buf.elems = 16;
+                    buf.slots = new byte[16];
+                    bb.get(buf.slots);
+                    return buf;
+                } else if (bufObj instanceof VMArrayInstance_u16) {
+                    final VMArrayInstance_u16 buf = (VMArrayInstance_u16)bufObj;
+                    buf.elems = 8;
+                    buf.slots = new short[8];
+                    bb.asShortBuffer().get(buf.slots);
+                    return buf;
+                } else if (bufObj instanceof VMArrayInstance_u32) {
+                    final VMArrayInstance_u32 buf = (VMArrayInstance_u32)bufObj;
+                    buf.elems = 4;
+                    buf.slots = new int[4];
+                    bb.asIntBuffer().get(buf.slots);
+                    return buf;
+                } else if (bufObj instanceof VMArrayInstance_i && ((VMArrayREPRData)bufObj.st.REPRData).ss.is_unsigned != 0) {
+                    final VMArrayInstance_i buf = (VMArrayInstance_i)bufObj;
+                    buf.elems = 2;
+                    buf.slots = new long[2];
+                    bb.asLongBuffer().get(buf.slots);
+                    return buf;
+                } else {
+                    throw ExceptionHandling.dieInternal(tc,
+                        "IPv6 address buffer type must be an array of uint8, uint16, uint32, uint64");
+                }
+            }
+            default:
+                throw ExceptionHandling.dieInternal(tc, "Unknown address family: " + family);
+        }
+    }
+
     public static SixModelObject socket(long listener, ThreadContext tc) {
         SixModelObject IOType = tc.curFrame.codeRef.staticInfo.compUnit.hllConfig.ioType;
         IOHandleInstance h = (IOHandleInstance)IOType.st.REPR.allocate(tc, IOType.st);
