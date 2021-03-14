@@ -1,5 +1,6 @@
 package org.raku.nqp.io;
 
+import java.net.Inet4Address;
 import inet.ipaddr.AddressStringException;
 import inet.ipaddr.AddressValueException;
 import inet.ipaddr.IPAddress;
@@ -13,6 +14,10 @@ import inet.ipaddr.ipv4.IPv4Address;
 public final class IPv4AddressStorage extends IPAddressStorage<IPv4Address> {
     IPv4AddressStorage(final IPv4Address ipAddress, final int port) {
         super(ipAddress, port);
+    }
+
+    IPv4AddressStorage(final Inet4Address nativeAddress, final int port) {
+        super(new IPv4Address(nativeAddress), port);
     }
 
     @Override

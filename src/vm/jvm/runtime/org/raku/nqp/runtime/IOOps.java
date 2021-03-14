@@ -10,6 +10,7 @@ import java.util.Map;
 import org.raku.nqp.io.AsyncProcessHandle;
 import org.raku.nqp.io.AsyncServerSocketHandle;
 import org.raku.nqp.io.AsyncSocketHandle;
+import org.raku.nqp.io.Resolver;
 import org.raku.nqp.sixmodel.SixModelObject;
 import org.raku.nqp.sixmodel.reprs.AsyncTaskInstance;
 import org.raku.nqp.sixmodel.reprs.IOHandleInstance;
@@ -168,6 +169,19 @@ public final class IOOps {
     public static SixModelObject watchfile(SixModelObject queue, SixModelObject schedulee,
             String filename, SixModelObject asyncType, ThreadContext tc) {
         throw new UnsupportedOperationException("watchfile is not yet implemented.");
+    }
+
+    public static SixModelObject dnslookup(
+        final String        hostname,
+        final long          protocolFamily,
+        final long          socketType,
+        final long          protocolType,
+        final long          packed,
+        final ThreadContext tc
+    ) {
+        final int  port  = (int)(packed & 0xFFFF);
+        final long flags = packed >> 16;
+        return Resolver.lookup(tc, hostname, port, (int)protocolFamily, (int)socketType, (int)protocolType, flags);
     }
 
     public static SixModelObject asyncconnect(SixModelObject queue, SixModelObject schedulee,

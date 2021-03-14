@@ -1,8 +1,6 @@
 package org.raku.nqp.io;
 
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.net.Inet6Address;
 import inet.ipaddr.AddressStringException;
 import inet.ipaddr.AddressValueException;
 import inet.ipaddr.IPAddress;
@@ -18,6 +16,10 @@ import static inet.ipaddr.ipv6.IPv6Address.IPv6Zone;
 public final class IPv6AddressStorage extends IPAddressStorage<IPv6Address> {
     IPv6AddressStorage(final IPv6Address ipAddress, final int port) {
         super(ipAddress, port);
+    }
+
+    IPv6AddressStorage(final Inet6Address nativeAddress, final int port) {
+        super(new IPv6Address(nativeAddress), port);
     }
 
     @Override

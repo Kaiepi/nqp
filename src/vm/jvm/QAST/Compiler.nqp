@@ -2140,10 +2140,24 @@ my %const_map := nqp::hash(
     'BINARY_SIZE_32_BIT',         8,
     'BINARY_SIZE_64_BIT',        12,
 
-    'SOCKET_FAMILY_UNSPEC',       0,
-    'SOCKET_FAMILY_INET',         1,
-    'SOCKET_FAMILY_INET6',        2,
-    'SOCKET_FAMILY_UNIX',         3,
+    'PROTOCOL_FAMILY_UNSPEC',     0,
+    'PROTOCOL_FAMILY_INET',       1,
+    'PROTOCOL_FAMILY_INET6',      2,
+    'PROTOCOL_FAMILY_UNIX',       3,
+
+    'SOCKET_TYPE_ANY',            0,
+    'SOCKET_TYPE_STREAM',         1,
+    'SOCKET_TYPE_DGRAM',          2,
+    'SOCKET_TYPE_RAW',            3,
+    'SOCKET_TYPE_RDM',            4,
+    'SOCKET_TYPE_SEQPACKET',      5,
+
+    'PROTOCOL_TYPE_ANY',          0,
+    'PROTOCOL_TYPE_TCP',          1,
+    'PROTOCOL_TYPE_UDP',          2,
+
+    'DNS_FLAG_ADDRCONFIG',        1,
+    'DNS_FLAG_PASSIVE',           2,
 );
 QAST::OperationsJAST.add_core_op('const', -> $qastcomp, $op {
     if nqp::existskey(%const_map, $op.name) {
@@ -2218,6 +2232,7 @@ QAST::OperationsJAST.map_classlib_core_op('addrfrombuf_ip4', $TYPE_OPS, 'addrfro
 QAST::OperationsJAST.map_classlib_core_op('addrfrombuf_ip6', $TYPE_OPS, 'addrfrombuf_ip6', [$RT_OBJ, $RT_INT, $RT_STR], $RT_OBJ, :tc);
 QAST::OperationsJAST.map_classlib_core_op('addrfrombuf_un', $TYPE_OPS, 'addrfrombuf_un', [$RT_OBJ], $RT_OBJ, :tc);
 QAST::OperationsJAST.map_classlib_core_op('addrtobuf', $TYPE_OPS, 'addrtobuf', [$RT_OBJ, $RT_OBJ], $RT_OBJ, :tc);
+QAST::OperationsJAST.map_classlib_core_op('dnslookup', $TYPE_IO_OPS, 'dnslookup', [$RT_STR, $RT_INT, $RT_INT, $RT_INT, $RT_INT], $RT_OBJ, :tc);
 
 QAST::OperationsJAST.map_classlib_core_op('socket', $TYPE_OPS, 'socket', [$RT_INT], $RT_OBJ, :tc);
 QAST::OperationsJAST.map_classlib_core_op('connect', $TYPE_OPS, 'connect', [$RT_OBJ, $RT_STR, $RT_INT, $RT_INT], $RT_OBJ, :tc);
