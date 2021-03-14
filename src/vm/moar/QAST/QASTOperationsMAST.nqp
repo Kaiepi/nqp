@@ -2248,10 +2248,24 @@ my %const_map := nqp::hash(
     'BINARY_SIZE_32_BIT',         8,
     'BINARY_SIZE_64_BIT',        12,
 
-    'SOCKET_FAMILY_UNSPEC',       0,
-    'SOCKET_FAMILY_INET',         1,
-    'SOCKET_FAMILY_INET6',        2,
-    'SOCKET_FAMILY_UNIX',         3,
+    'PROTOCOL_FAMILY_UNSPEC',     0,
+    'PROTOCOL_FAMILY_INET',       1,
+    'PROTOCOL_FAMILY_INET6',      2,
+    'PROTOCOL_FAMILY_UNIX',       3,
+
+    'SOCKET_TYPE_ANY',            0,
+    'SOCKET_TYPE_STREAM',         1,
+    'SOCKET_TYPE_DGRAM',          2,
+    'SOCKET_TYPE_RAW',            3,
+    'SOCKET_TYPE_RDM',            4,
+    'SOCKET_TYPE_SEQPACKET',      5,
+
+    'PROTOCOL_TYPE_ANY',          0,
+    'PROTOCOL_TYPE_TCP',          1,
+    'PROTOCOL_TYPE_UDP',          2,
+
+    'DNS_FLAG_ADDRCONFIG',        1,
+    'DNS_FLAG_PASSIVE',           2,
 );
 QAST::MASTOperations.add_core_op('const', -> $qastcomp, $op {
     if nqp::existskey(%const_map, $op.name) {
@@ -2306,6 +2320,7 @@ QAST::MASTOperations.add_core_moarop_mapping('addrfrombuf_ip4', 'addrfrombuf_ip4
 QAST::MASTOperations.add_core_moarop_mapping('addrfrombuf_ip6', 'addrfrombuf_ip6');
 QAST::MASTOperations.add_core_moarop_mapping('addrfrombuf_un', 'addrfrombuf_un');
 QAST::MASTOperations.add_core_moarop_mapping('addrtobuf', 'addrtobuf');
+QAST::MASTOperations.add_core_moarop_mapping('dnslookup', 'dnslookup');
 QAST::MASTOperations.add_core_moarop_mapping('socket', 'socket');
 QAST::MASTOperations.add_core_moarop_mapping('connect', 'connect_sk', 0);
 QAST::MASTOperations.add_core_moarop_mapping('bindsock', 'bind_sk', 0);
