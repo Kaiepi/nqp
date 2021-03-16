@@ -56,6 +56,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.raku.nqp.io.AddressStorage;
 import org.raku.nqp.io.FileHandle;
+import org.raku.nqp.io.IIOAddressable;
 import org.raku.nqp.io.IIOBindable;
 import org.raku.nqp.io.IIOCancelable;
 import org.raku.nqp.io.IIOClosable;
@@ -761,6 +762,46 @@ public final class Ops {
                 "This handle does not support getport");
         }
         return -1;
+    }
+
+    public static SixModelObject getsockname(final SixModelObject obj, final ThreadContext tc) {
+        if (!(obj instanceof IOHandleInstance))
+            throw ExceptionHandling.dieInternal(tc,
+                "getsockname requires a concrete object of REPR IOHandle, " +
+                "got " + obj.st.REPR.name + " (" + obj.st.debugName + ")");
+
+        final IOHandleInstance h = (IOHandleInstance)obj;
+        if (!(h.handle instanceof IIOAddressable))
+            throw ExceptionHandling.dieInternal(tc, "Cannot get the socket address of this type of handle");
+
+        final HLLConfig       hllConfig = tc.curFrame.codeRef.staticInfo.compUnit.hllConfig;
+        final SixModelObject  Array     = hllConfig.listType;
+        final SixModelObject  Int       = hllConfig.intBoxType;
+        final SixModelObject  arr       = Array.st.REPR.allocate(tc, Array.st);
+        final AddressInstance address   = ((IIOAddressable)h.handle).getSocketAddress(tc);
+        arr.push_boxed(tc, box_i((long)address.storage.getFamily(), Int, tc));
+        arr.push_boxed(tc, address);
+        return arr;
+    }
+
+    public static SixModelObject getpeername(final SixModelObject obj, final ThreadContext tc) {
+        if (!(obj instanceof IOHandleInstance))
+            throw ExceptionHandling.dieInternal(tc,
+                "getsockname requires a concrete object of REPR IOHandle, " +
+                "got " + obj.st.REPR.name + " (" + obj.st.debugName + ")");
+
+        final IOHandleInstance h = (IOHandleInstance)obj;
+        if (!(h.handle instanceof IIOAddressable))
+            throw ExceptionHandling.dieInternal(tc, "Cannot get the peer address of this type of handle");
+
+        final HLLConfig       hllConfig = tc.curFrame.codeRef.staticInfo.compUnit.hllConfig;
+        final SixModelObject  Array     = hllConfig.listType;
+        final SixModelObject  Int       = hllConfig.intBoxType;
+        final SixModelObject  arr       = Array.st.REPR.allocate(tc, Array.st);
+        final AddressInstance address   = ((IIOAddressable)h.handle).getPeerAddress(tc);
+        arr.push_boxed(tc, box_i((long)address.storage.getFamily(), Int, tc));
+        arr.push_boxed(tc, address);
+        return arr;
     }
 
     public static long filereadable(String path, ThreadContext tc) {

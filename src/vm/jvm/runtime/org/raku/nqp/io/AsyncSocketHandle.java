@@ -14,11 +14,13 @@ import org.raku.nqp.runtime.HLLConfig;
 import org.raku.nqp.runtime.Ops;
 import org.raku.nqp.runtime.ThreadContext;
 import org.raku.nqp.sixmodel.SixModelObject;
+import org.raku.nqp.sixmodel.reprs.AddressInstance;
 import org.raku.nqp.sixmodel.reprs.AsyncTaskInstance;
 import org.raku.nqp.sixmodel.reprs.ConcBlockingQueueInstance;
 import org.raku.nqp.sixmodel.reprs.IOHandleInstance;
 
-public class AsyncSocketHandle implements IIOClosable, IIOCancelable {
+public class AsyncSocketHandle implements IIOClosable, IIOCancelable, IIOAddressable {
+
     private AsynchronousSocketChannel channel;
 
     public AsyncSocketHandle(ThreadContext tc) {
@@ -222,5 +224,23 @@ public class AsyncSocketHandle implements IIOClosable, IIOCancelable {
     @Override
     public void cancel(ThreadContext tc) {
         close(tc);
+    }
+
+    @Override
+    public AddressInstance getSocketAddress(final ThreadContext tc) {
+        try {
+            return toAddress(tc, channel.getLocalAddress());
+        } catch (final Exception e) {
+            throw ExceptionHandling.dieInternal(tc, e);
+        }
+    }
+
+    @Override
+    public AddressInstance getPeerAddress(final ThreadContext tc) {
+        try {
+            return toAddress(tc, channel.getRemoteAddress());
+        } catch (final Exception e) {
+            throw ExceptionHandling.dieInternal(tc, e);
+        }
     }
 }

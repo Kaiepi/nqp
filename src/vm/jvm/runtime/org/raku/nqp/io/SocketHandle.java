@@ -7,8 +7,9 @@ import java.nio.charset.Charset;
 
 import org.raku.nqp.runtime.ExceptionHandling;
 import org.raku.nqp.runtime.ThreadContext;
+import org.raku.nqp.sixmodel.reprs.AddressInstance;
 
-public class SocketHandle extends SyncHandle {
+public class SocketHandle extends SyncHandle implements IIOAddressable {
 
     public SocketHandle(ThreadContext tc) {
         try {
@@ -36,5 +37,23 @@ public class SocketHandle extends SyncHandle {
     @Override
     public void flush(ThreadContext tc) {
         // Not provided.
+    }
+
+    @Override
+    public AddressInstance getSocketAddress(final ThreadContext tc) {
+        try {
+            return toAddress(tc, ((SocketChannel)chan).getLocalAddress());
+        } catch (final Exception e) {
+            throw ExceptionHandling.dieInternal(tc, e);
+        }
+    }
+
+    @Override
+    public AddressInstance getPeerAddress(final ThreadContext tc) {
+        try {
+            return toAddress(tc, ((SocketChannel)chan).getRemoteAddress());
+        } catch (final Exception e) {
+            throw ExceptionHandling.dieInternal(tc, e);
+        }
     }
 }
