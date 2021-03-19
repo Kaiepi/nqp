@@ -11,42 +11,65 @@ import org.raku.nqp.sixmodel.reprs.AddressInstance;
 
 public class ServerSocketHandle implements IIOBindable, IIOClosable, IIOAddressable {
 
-    ServerSocketChannel listenChan;
+    final int family;
+    final int type;
+    final int protocol;
+
+    final ServerSocketChannel listenChan;
+
     public int listenPort;
 
-    public ServerSocketHandle(ThreadContext tc) {
-        try {
-            listenChan = ServerSocketChannel.open();
-        } catch (IOException e) {
-            ExceptionHandling.dieInternal(tc, e);
-        }
-    }
+    public ServerSocketHandle(final ThreadContext tc, final int family, final int type, final int protocol) {
+        if (!checkFamily(tc, family, ProtocolFamily.INET) && !checkFamily(tc, family, ProtocolFamily.INET6))
+            throw ExceptionHandling.dieInternal(tc,
+                "socket expects PF_INET or PF_INET6 (got " + ProtocolFamily.asString(tc, family));
+        if (!checkType(tc, type, SocketType.STREAM))
+            throw ExceptionHandling.dieInternal(tc,
+                "socket expects SOCK_STREAM (got " + SocketType.asString(tc, type) + ")");
+        if (!checkProtocol(tc, protocol, ProtocolType.TCP))
+            throw ExceptionHandling.dieInternal(tc,
+                "socket expects IPPROTO_TCP (got " + ProtocolType.asString(tc, protocol) + ")");
 
-    @Override
-    public void bind(ThreadContext tc, String host, int port, int backlog) {
+        this.family   = family;
+        this.type     = type;
+        this.protocol = protocol;
         try {
-            InetSocketAddress addr = new InetSocketAddress(host, port);
-            listenChan.bind(addr, backlog);
-            listenPort = listenChan.socket().getLocalPort();
-        } catch (IOException e) {
+            this.listenChan = ServerSocketChannel.open();
+        } catch (final IOException e) {
             throw ExceptionHandling.dieInternal(tc, e);
         }
     }
 
-    public SocketHandle accept(ThreadContext tc) {
+    @Override
+    public void bind(final ThreadContext tc, final AddressInstance address, final int backlog) {
+        final int addressFamily = address.storage.getFamily();
+        if (!checkFamily(tc, addressFamily, family))
+            throw ExceptionHandling.dieInternal(tc,
+                ProtocolFamily.asString(tc, family) + " socket got a " +
+                ProtocolFamily.asString(tc, addressFamily) + " address");
+
+        try {
+            listenChan.bind(address.storage.getAddress(), backlog);
+            listenPort = listenChan.socket().getLocalPort();
+        } catch (final IOException e) {
+            throw ExceptionHandling.dieInternal(tc, e);
+        }
+    }
+
+    public SocketHandle accept(final ThreadContext tc) {
         try {
             SocketChannel chan = listenChan.accept();
-            return chan == null ? null : new SocketHandle(tc, chan);
-        } catch (IOException e) {
+            return chan == null ? null : new SocketHandle(tc, family, type, protocol, chan);
+        } catch (final IOException e) {
             throw ExceptionHandling.dieInternal(tc, e);
         }
     }
 
     @Override
-    public void close(ThreadContext tc) {
+    public void close(final ThreadContext tc) {
         try {
             listenChan.close();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw ExceptionHandling.dieInternal(tc, e);
         }
     }

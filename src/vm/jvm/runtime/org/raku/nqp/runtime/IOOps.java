@@ -12,6 +12,7 @@ import org.raku.nqp.io.AsyncServerSocketHandle;
 import org.raku.nqp.io.AsyncSocketHandle;
 import org.raku.nqp.io.Resolver;
 import org.raku.nqp.sixmodel.SixModelObject;
+import org.raku.nqp.sixmodel.reprs.AddressInstance;
 import org.raku.nqp.sixmodel.reprs.AsyncTaskInstance;
 import org.raku.nqp.sixmodel.reprs.IOHandleInstance;
 
@@ -184,33 +185,39 @@ public final class IOOps {
         return Resolver.lookup(tc, hostname, port, (int)protocolFamily, (int)socketType, (int)protocolType, flags);
     }
 
-    public static SixModelObject asyncconnect(SixModelObject queue, SixModelObject schedulee,
-            String host, long port, SixModelObject asyncType, ThreadContext tc) {
-
-        AsyncTaskInstance task = (AsyncTaskInstance) asyncType.st.REPR.allocate(tc, asyncType.st);
-        task.queue = queue;
+    public static SixModelObject asyncconnect(
+        final SixModelObject queue,
+        final SixModelObject schedulee,
+        final SixModelObject address,
+        final SixModelObject asyncType,
+        final ThreadContext  tc
+    ) {
+        final AsyncTaskInstance task = (AsyncTaskInstance)asyncType.st.REPR.allocate(tc, asyncType.st);
+        task.queue     = queue;
         task.schedulee = schedulee;
 
-        AsyncSocketHandle handle = new AsyncSocketHandle(tc);
+        final AsyncSocketHandle handle = new AsyncSocketHandle(tc);
         task.handle = handle;
-        handle.connect(tc, host, (int) port, task);
-
+        handle.connect(tc, (AddressInstance)address, task);
         return task;
     }
 
-    public static SixModelObject asynclisten(SixModelObject queue, SixModelObject schedulee,
-            String host, long port, long backlog, SixModelObject asyncType, ThreadContext tc) {
-
-        AsyncTaskInstance task = (AsyncTaskInstance) asyncType.st.REPR.allocate(tc, asyncType.st);
-        task.queue = queue;
+    public static SixModelObject asynclisten(
+        final SixModelObject queue,
+        final SixModelObject schedulee,
+        final SixModelObject address,
+        final long           backlog,
+        final SixModelObject asyncType,
+        final ThreadContext tc
+    ) {
+        final AsyncTaskInstance task = (AsyncTaskInstance)asyncType.st.REPR.allocate(tc, asyncType.st);
+        task.queue     = queue;
         task.schedulee = schedulee;
 
-        AsyncServerSocketHandle handle = new AsyncServerSocketHandle(tc);
+        final AsyncServerSocketHandle handle = new AsyncServerSocketHandle(tc);
         task.handle = handle;
-
-        handle.bind(tc, host, (int) port, (int) backlog);
+        handle.bind(tc, (AddressInstance)address, (int)backlog);
         handle.accept(tc, task);
-
         return task;
     }
 

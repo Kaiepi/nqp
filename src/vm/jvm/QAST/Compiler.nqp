@@ -2234,9 +2234,9 @@ QAST::OperationsJAST.map_classlib_core_op('addrfrombuf_un', $TYPE_OPS, 'addrfrom
 QAST::OperationsJAST.map_classlib_core_op('addrtobuf', $TYPE_OPS, 'addrtobuf', [$RT_OBJ, $RT_OBJ], $RT_OBJ, :tc);
 QAST::OperationsJAST.map_classlib_core_op('dnslookup', $TYPE_IO_OPS, 'dnslookup', [$RT_STR, $RT_INT, $RT_INT, $RT_INT, $RT_INT], $RT_OBJ, :tc);
 
-QAST::OperationsJAST.map_classlib_core_op('socket', $TYPE_OPS, 'socket', [$RT_INT], $RT_OBJ, :tc);
-QAST::OperationsJAST.map_classlib_core_op('connect', $TYPE_OPS, 'connect', [$RT_OBJ, $RT_STR, $RT_INT, $RT_INT], $RT_OBJ, :tc);
-QAST::OperationsJAST.map_classlib_core_op('bindsock', $TYPE_OPS, 'bindsock', [$RT_OBJ, $RT_STR, $RT_INT, $RT_INT, $RT_INT], $RT_OBJ, :tc);
+QAST::OperationsJAST.map_classlib_core_op('socket', $TYPE_OPS, 'socket', [$RT_INT, $RT_INT, $RT_INT, $RT_INT], $RT_OBJ, :tc);
+QAST::OperationsJAST.map_classlib_core_op('connect', $TYPE_OPS, 'connect', [$RT_OBJ, $RT_OBJ], $RT_OBJ, :tc);
+QAST::OperationsJAST.map_classlib_core_op('bindsock', $TYPE_OPS, 'bindsock', [$RT_OBJ, $RT_OBJ, $RT_INT], $RT_OBJ, :tc);
 QAST::OperationsJAST.map_classlib_core_op('accept', $TYPE_OPS, 'accept', [$RT_OBJ], $RT_OBJ, :tc);
 QAST::OperationsJAST.map_classlib_core_op('getport', $TYPE_OPS, 'getport', [$RT_OBJ], $RT_INT, :tc);
 QAST::OperationsJAST.map_classlib_core_op('getsockname', $TYPE_OPS, 'getsockname', [$RT_OBJ], $RT_OBJ, :tc);
@@ -2930,8 +2930,8 @@ QAST::OperationsJAST.map_classlib_core_op('cancel', $TYPE_OPS, 'cancel', [$RT_OB
 QAST::OperationsJAST.map_classlib_core_op('cancelnotify', $TYPE_OPS, 'cancelnotify', [$RT_OBJ, $RT_OBJ, $RT_OBJ], $RT_OBJ, :tc);
 QAST::OperationsJAST.map_classlib_core_op('signal', $TYPE_IO_OPS, 'signal', [$RT_OBJ, $RT_OBJ, $RT_INT, $RT_OBJ], $RT_OBJ, :tc);
 QAST::OperationsJAST.map_classlib_core_op('watchfile', $TYPE_IO_OPS, 'watchfile', [$RT_OBJ, $RT_OBJ, $RT_STR, $RT_OBJ], $RT_OBJ, :tc);
-QAST::OperationsJAST.map_classlib_core_op('asyncconnect', $TYPE_IO_OPS, 'asyncconnect', [$RT_OBJ, $RT_OBJ, $RT_STR, $RT_INT, $RT_OBJ], $RT_OBJ, :tc);
-QAST::OperationsJAST.map_classlib_core_op('asynclisten', $TYPE_IO_OPS, 'asynclisten', [$RT_OBJ, $RT_OBJ, $RT_STR, $RT_INT, $RT_INT, $RT_OBJ], $RT_OBJ, :tc);
+QAST::OperationsJAST.map_classlib_core_op('asyncconnect', $TYPE_IO_OPS, 'asyncconnect', [$RT_OBJ, $RT_OBJ, $RT_OBJ, $RT_OBJ], $RT_OBJ, :tc);
+QAST::OperationsJAST.map_classlib_core_op('asynclisten', $TYPE_IO_OPS, 'asynclisten', [$RT_OBJ, $RT_OBJ, $RT_OBJ, $RT_INT, $RT_OBJ], $RT_OBJ, :tc);
 QAST::OperationsJAST.map_classlib_core_op('asyncwritebytes', $TYPE_IO_OPS, 'asyncwritebytes', [$RT_OBJ, $RT_OBJ, $RT_OBJ, $RT_OBJ, $RT_OBJ], $RT_OBJ, :tc);
 QAST::OperationsJAST.map_classlib_core_op('asyncreadbytes', $TYPE_IO_OPS, 'asyncreadbytes', [$RT_OBJ, $RT_OBJ, $RT_OBJ, $RT_OBJ, $RT_OBJ], $RT_OBJ, :tc);
 QAST::OperationsJAST.map_classlib_core_op('spawnprocasync', $TYPE_IO_OPS, 'spawnprocasync', [$RT_OBJ, $RT_STR, $RT_OBJ, $RT_STR, $RT_OBJ, $RT_OBJ], $RT_OBJ, :tc);

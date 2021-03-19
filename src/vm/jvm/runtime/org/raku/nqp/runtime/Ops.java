@@ -668,71 +668,51 @@ public final class Ops {
         }
     }
 
-    public static SixModelObject socket(long listener, ThreadContext tc) {
-        SixModelObject IOType = tc.curFrame.codeRef.staticInfo.compUnit.hllConfig.ioType;
-        IOHandleInstance h = (IOHandleInstance)IOType.st.REPR.allocate(tc, IOType.st);
-        if (listener == 0) {
-            h.handle = new SocketHandle(tc);
-        } else if (listener > 0) {
-            h.handle = new ServerSocketHandle(tc);
-        } else {
-            ExceptionHandling.dieInternal(tc,
-                "Socket handle does not support a negative listener value");
-        }
+    public static SixModelObject socket(
+        final long          family,
+        final long          type,
+        final long          protocol,
+        final long          passive,
+        final ThreadContext tc
+    ) {
+        final SixModelObject   IOType = tc.curFrame.codeRef.staticInfo.compUnit.hllConfig.ioType;
+        final IOHandleInstance h      = (IOHandleInstance)IOType.st.REPR.allocate(tc, IOType.st);
+        h.handle = passive == 0
+                 ? new SocketHandle(tc, (int)family, (int)type, (int)protocol)
+                 : new ServerSocketHandle(tc, (int)family, (int)type, (int)protocol);
         return h;
     }
 
-    public static SixModelObject connect(SixModelObject obj, String host, long port, long family, ThreadContext tc) {
-        IOHandleInstance h = (IOHandleInstance)obj;
+    public static SixModelObject connect(final SixModelObject obj, final SixModelObject address, final ThreadContext tc) {
+        if (!(address instanceof AddressInstance))
+            throw ExceptionHandling.dieInternal(tc,
+                "connect requires a concrete object of REPR Address, " +
+                "got " + address.st.REPR.name + " (" + address.st.debugName + ")");
 
-		switch ((int) family) {
-			case ProtocolFamily.UNSPEC:
-			case ProtocolFamily.INET:
-			case ProtocolFamily.INET6:
-				if (h.handle instanceof SocketHandle) {
-					((SocketHandle)h.handle).connect(tc, host, (int) port);
-				} else {
-					ExceptionHandling.dieInternal(tc,
-						"This handle does not support connect");
-				}
-				break;
-			case ProtocolFamily.UNIX:
-				ExceptionHandling.dieInternal(tc,
-					"UNIX sockets are not supported on the JVM");
-				break;
-			default:
-				ExceptionHandling.dieInternal(tc,
-					"Unsupported socket family: " + Long.toString(family));
-				break;
-		}
-
+        final IOHandleInstance h = (IOHandleInstance)obj;
+        if (h.handle instanceof SocketHandle)
+            ((SocketHandle)h.handle).connect(tc, (AddressInstance)address);
+        else
+            throw ExceptionHandling.dieInternal(tc, "This handle does not support connect");
         return obj;
     }
 
-    public static SixModelObject bindsock(SixModelObject obj, String host, long port, long family, long backlog, ThreadContext tc) {
-        IOHandleInstance h = (IOHandleInstance)obj;
+    public static SixModelObject bindsock(
+        final SixModelObject obj,
+        final SixModelObject address,
+        final long           backlog,
+        final ThreadContext  tc
+    ) {
+        if (!(address instanceof AddressInstance))
+            throw ExceptionHandling.dieInternal(tc,
+                "bindsock requires a concrete object of REPR Address, " +
+                "got " + address.st.REPR.name + " (" + address.st.debugName + ")");
 
-		switch ((int) family) {
-			case ProtocolFamily.UNSPEC:
-			case ProtocolFamily.INET:
-			case ProtocolFamily.INET6:
-				if (h.handle instanceof IIOBindable) {
-					((IIOBindable)h.handle).bind(tc, host, (int) port, (int) backlog);
-				} else {
-					ExceptionHandling.dieInternal(tc,
-						"This handle does not support bind");
-				}
-				break;
-			case ProtocolFamily.UNIX:
-				ExceptionHandling.dieInternal(tc,
-					"UNIX sockets are not supported on the JVM");
-				break;
-			default:
-				ExceptionHandling.dieInternal(tc,
-					"Unsupported socket family: " + Long.toString(family));
-				break;
-		}
-
+        final IOHandleInstance h = (IOHandleInstance)obj;
+        if (h.handle instanceof IIOBindable)
+            ((IIOBindable)h.handle).bind(tc, (AddressInstance)address, (int)backlog);
+        else
+            throw ExceptionHandling.dieInternal(tc, "This handle does not support bind");
         return obj;
     }
 

@@ -1,7 +1,6 @@
 package org.raku.nqp.io;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.AsynchronousSocketChannel;
@@ -21,22 +20,21 @@ import org.raku.nqp.sixmodel.reprs.IOHandleInstance;
 
 public class AsyncSocketHandle implements IIOClosable, IIOCancelable, IIOAddressable {
 
-    private AsynchronousSocketChannel channel;
+    final AsynchronousSocketChannel channel;
 
-    public AsyncSocketHandle(ThreadContext tc) {
+    public AsyncSocketHandle(final ThreadContext tc) {
         try {
             this.channel = AsynchronousSocketChannel.open();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw ExceptionHandling.dieInternal(tc, e);
         }
     }
 
-    public AsyncSocketHandle(ThreadContext tc, AsynchronousSocketChannel channel) {
+    public AsyncSocketHandle(final ThreadContext tc, final AsynchronousSocketChannel channel) {
         this.channel = channel;
     }
 
-    public void connect(final ThreadContext tc, String host, int port,
-            final AsyncTaskInstance task) {
+    public void connect(final ThreadContext tc, final AddressInstance address, final AsyncTaskInstance task) {
         final HLLConfig      hllConfig = tc.curFrame.codeRef.staticInfo.compUnit.hllConfig;
         final SixModelObject IOType    = hllConfig.ioType;
         final SixModelObject Array     = hllConfig.listType;
@@ -70,14 +68,13 @@ public class AsyncSocketHandle implements IIOClosable, IIOCancelable, IIOAddress
         };
 
         try {
-            InetSocketAddress addr = new InetSocketAddress(host, port);
-            channel.connect(addr, task, handler);
+            channel.connect(address.storage.getAddress(), task, handler);
         } catch (final Throwable t) {
             throw ExceptionHandling.dieInternal(tc, t);
         }
     }
 
-    public void writeBytes(ThreadContext tc, AsyncTaskInstance task, SixModelObject toWrite) {
+    public void writeBytes(final ThreadContext tc, final AsyncTaskInstance task, final SixModelObject toWrite) {
         ByteBuffer buffer = Buffers.unstashBytes(toWrite, tc);
         writeByteBuffer(tc, task, buffer);
     }
@@ -178,8 +175,8 @@ public class AsyncSocketHandle implements IIOClosable, IIOCancelable, IIOAddress
 
                         channel.read(readBuffer, task, this);
                     }
-                } catch (final Throwable t) {
-                    failed(t, task);
+                } catch (final Exception e) {
+                    failed(e, task);
                 }
             }
 
@@ -200,11 +197,7 @@ public class AsyncSocketHandle implements IIOClosable, IIOCancelable, IIOAddress
             }
         };
 
-        try {
-            channel.read(readBuffer, task, handler);
-        } catch (final Throwable t) {
-            handler.failed(t, task);
-        }
+        channel.read(readBuffer, task, handler);
     }
 
     @Override

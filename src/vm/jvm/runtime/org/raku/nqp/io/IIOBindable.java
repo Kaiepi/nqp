@@ -1,9 +1,8 @@
 package org.raku.nqp.io;
 
 import org.raku.nqp.runtime.ThreadContext;
+import org.raku.nqp.sixmodel.reprs.AddressInstance;
 
 public interface IIOBindable {
-
-    void bind(ThreadContext tc, String host, int port, int backlog);
-
+    void bind(final ThreadContext tc, final AddressInstance address, final int backlog);
 }

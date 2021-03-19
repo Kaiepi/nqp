@@ -1,7 +1,7 @@
 package org.raku.nqp.io;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
@@ -24,17 +24,16 @@ public class AsyncServerSocketHandle implements IIOBindable, IIOCancelable, IIOA
 
     public AsyncServerSocketHandle(final ThreadContext tc) {
         try {
-            listenChan = AsynchronousServerSocketChannel.open();
+            this.listenChan = AsynchronousServerSocketChannel.open();
         } catch (final IOException e) {
             throw ExceptionHandling.dieInternal(tc, e);
         }
     }
 
     @Override
-    public void bind(final ThreadContext tc, final String host, final int port, final int backlog) {
+    public void bind(final ThreadContext tc, final AddressInstance address, final int backlog) {
         try {
-            InetSocketAddress addr = new InetSocketAddress(host, port);
-            listenChan.bind(addr, backlog);
+            listenChan.bind(address.storage.getAddress(), backlog);
         } catch (final UnresolvedAddressException uae) {
             ExceptionHandling.dieInternal(tc, "Failed to resolve host name");
         } catch (final IOException e) {
@@ -67,13 +66,13 @@ public class AsyncServerSocketHandle implements IIOBindable, IIOCancelable, IIOA
             }
 
             @Override
-            public void failed(Throwable exc, AsyncTaskInstance task) {
+            public void failed(Throwable t, AsyncTaskInstance task) {
                 final ThreadContext  curTC  = tc.gc.getCurrentThreadContext();
                 final SixModelObject result = Array.st.REPR.allocate(curTC, Array.st);
                 result.push_boxed(curTC, task.schedulee);
                 result.push_boxed(curTC, IOType);
                 result.push_boxed(curTC, IOType);
-                result.push_boxed(curTC, Ops.box_s(exc.toString(), Str, curTC));
+                result.push_boxed(curTC, Ops.box_s(t.toString(), Str, curTC));
                 ((ConcBlockingQueueInstance) task.queue).push_boxed(curTC, result);
             }
         };
