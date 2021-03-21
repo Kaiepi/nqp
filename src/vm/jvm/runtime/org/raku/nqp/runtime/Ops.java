@@ -733,17 +733,6 @@ public final class Ops {
         return null;
     }
 
-    public static long getport(SixModelObject obj, ThreadContext tc) {
-        IOHandleInstance h = (IOHandleInstance)obj;
-        if (h.handle instanceof ServerSocketHandle) {
-            return ((ServerSocketHandle)h.handle).listenPort;
-        } else {
-            ExceptionHandling.dieInternal(tc,
-                "This handle does not support getport");
-        }
-        return -1;
-    }
-
     public static SixModelObject getsockname(final SixModelObject obj, final ThreadContext tc) {
         if (!(obj instanceof IOHandleInstance))
             throw ExceptionHandling.dieInternal(tc,

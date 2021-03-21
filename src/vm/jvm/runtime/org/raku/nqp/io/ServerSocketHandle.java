@@ -17,8 +17,6 @@ public class ServerSocketHandle implements IIOBindable, IIOClosable, IIOAddressa
 
     final ServerSocketChannel listenChan;
 
-    public int listenPort;
-
     public ServerSocketHandle(final ThreadContext tc, final int family, final int type, final int protocol) {
         if (!checkFamily(tc, family, ProtocolFamily.INET) && !checkFamily(tc, family, ProtocolFamily.INET6))
             throw ExceptionHandling.dieInternal(tc,
@@ -50,7 +48,6 @@ public class ServerSocketHandle implements IIOBindable, IIOClosable, IIOAddressa
 
         try {
             listenChan.bind(address.storage.getAddress(), backlog);
-            listenPort = listenChan.socket().getLocalPort();
         } catch (final IOException e) {
             throw ExceptionHandling.dieInternal(tc, e);
         }
