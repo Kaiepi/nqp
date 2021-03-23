@@ -54,8 +54,6 @@ public class AsyncServerSocketHandle implements IIOBindable, IIOCancelable, IIOA
 
             @Override
             public void completed(final AsynchronousSocketChannel channel, final AsyncTaskInstance task) {
-                listenChan.accept(task, this);
-
                 final ThreadContext    curTC          = tc.gc.getCurrentThreadContext();
                 final SixModelObject   result         = Array.st.REPR.allocate(curTC, Array.st);
                 final IOHandleInstance clientIoHandle = (IOHandleInstance) IOType.st.REPR.allocate(curTC, IOType.st);
@@ -64,6 +62,8 @@ public class AsyncServerSocketHandle implements IIOBindable, IIOCancelable, IIOA
                 result.push_boxed(curTC, clientIoHandle);
                 result.push_boxed(curTC, Str);
                 ((ConcBlockingQueueInstance) task.queue).push_boxed(curTC, result);
+
+                listenChan.accept(task, this);
             }
 
             @Override
