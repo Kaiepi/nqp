@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.NotYetBoundException;
 import java.nio.channels.UnresolvedAddressException;
@@ -66,7 +67,10 @@ public class AsyncServerSocketHandle implements IIOBindable, IIOCancelable, IIOA
             }
 
             @Override
-            public void failed(Throwable t, AsyncTaskInstance task) {
+            public void failed(final Throwable t, final AsyncTaskInstance task) {
+                if (t instanceof AsynchronousCloseException || t instanceof ClosedChannelException)
+                    return;
+
                 final ThreadContext  curTC  = tc.gc.getCurrentThreadContext();
                 final SixModelObject result = Array.st.REPR.allocate(curTC, Array.st);
                 result.push_boxed(curTC, task.schedulee);
