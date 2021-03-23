@@ -62,7 +62,7 @@ public class AsyncSocketHandle implements IIOClosable, IIOCancelable, IIOAddress
                 final SixModelObject result = Array.st.REPR.allocate(curTC, Array.st);
                 result.push_boxed(curTC, task.schedulee);
                 result.push_boxed(curTC, IOType);
-                result.push_boxed(curTC, Ops.box_s(t.toString(), Str, curTC));
+                result.push_boxed(curTC, Ops.box_s("Error connecting a socket: " + t.getMessage(), Str, curTC));
                 ((ConcBlockingQueueInstance) task.queue).push_boxed(curTC, result);
             }
         };
@@ -104,7 +104,7 @@ public class AsyncSocketHandle implements IIOClosable, IIOCancelable, IIOAddress
                 final SixModelObject result = Array.st.REPR.allocate(curTC, Array.st);
                 result.push_boxed(curTC, task.schedulee);
                 result.push_boxed(curTC, Int);
-                result.push_boxed(curTC, Ops.box_s(t.toString(), Str, curTC));
+                result.push_boxed(curTC, Ops.box_s("Error writing to a socket: " + t.getMessage(), Str, curTC));
                 ((ConcBlockingQueueInstance) task.queue).push_boxed(curTC, result);
             }
         };
@@ -192,7 +192,7 @@ public class AsyncSocketHandle implements IIOClosable, IIOCancelable, IIOAddress
                 result.push_boxed(curTC, Str);
                 result.push_boxed(curTC, Int);
                 result.push_boxed(curTC, BOOTAddress);
-                result.push_boxed(curTC, Ops.box_s(t.toString(), Str, curTC));
+                result.push_boxed(curTC, Ops.box_s("Error reading from a socket: " + t.getMessage(), Str, curTC));
                 ((ConcBlockingQueueInstance) task.queue).push_boxed(curTC, result);
             }
         };
@@ -219,7 +219,8 @@ public class AsyncSocketHandle implements IIOClosable, IIOCancelable, IIOAddress
         try {
             return toAddress(tc, channel.getLocalAddress());
         } catch (final Exception e) {
-            throw ExceptionHandling.dieInternal(tc, e);
+            throw ExceptionHandling.dieInternal(tc,
+                "Error getting the local address of a socket: " + e.getMessage());
         }
     }
 
@@ -228,7 +229,8 @@ public class AsyncSocketHandle implements IIOClosable, IIOCancelable, IIOAddress
         try {
             return toAddress(tc, channel.getRemoteAddress());
         } catch (final Exception e) {
-            throw ExceptionHandling.dieInternal(tc, e);
+            throw ExceptionHandling.dieInternal(tc,
+                "Error getting the remote address of a socket: " + e.getMessage());
         }
     }
 }

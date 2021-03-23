@@ -110,12 +110,12 @@ public class AsyncServerSocketHandle implements IIOBindable, IIOCancelable, IIOA
         try {
             return toAddress(tc, listenChan.getLocalAddress());
         } catch (final Exception e) {
-            throw ExceptionHandling.dieInternal(tc, e);
+            throw ExceptionHandling.dieInternal(tc, "Error getting the local address of a socket: " + e.getMessage());
         }
     }
 
     @Override
     public AddressInstance getPeerAddress(final ThreadContext tc) {
-        throw ExceptionHandling.dieInternal(tc, "Cannot get the peer address of a connection");
+        throw ExceptionHandling.dieInternal(tc, "Cannot get the remote address of a bound socket");
     }
 }
